@@ -1,0 +1,245 @@
+﻿@{
+    ViewData["Title"] = "Status";
+}
+
+<div align="center">
+
+    @{
+
+        if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Success")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Registration Successful</h2>
+            <br />
+
+            <img src="~/images/success-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <p style="width: 600px">
+                    You are now registered as a @this.Context.Request.Query["Role"] with CMCS.
+                </p>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Registration Failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200"/>
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="left" style="width: 600px">
+                    <p>
+                        Unable to register the user as a @this.Context.Request.Query["Role"] with CMCS.
+                        <br />
+                        Below are some of the possible reasons why the registration failed:
+                        <br />
+
+                        <ul>
+                            <li>The user account already exists.</li>
+                            <li>The user's password does not follow the CMCS password criteria.</li>
+                            <li>The user did not complete all the required fields.</li>
+                        </ul>
+                    </p>
+                </div>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "UserLogin" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Login Failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="left" style="width: 600px">
+                    <p>
+                        Unable to login to the user account.
+                        <br />
+                        Below are some of the possible reasons why the login process failed:
+                        <br />
+
+                        <ul>
+                            <li>The user account does not exist.</li>
+                            <li>The password is incorrect.</li>
+                        </ul>
+
+                        The 'User ID' field is your Identity Number that you provided when you registered.<br />
+                        The 'Password' field is your password that you set for your user account.
+                    </p>
+                </div>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "NewRequest" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content;">Request submission failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="left" style="width: 600px">
+                    <p>
+                        Unable to submit the request.
+                        <br />
+                        Below are some of the possible reasons why the request submission failed:
+                        <br />
+
+                        <ul>
+                            <li>The required fields are empty.</li>
+                            <li>The file types of the documents are not supported.</li>
+                        </ul>
+                    </p>
+                </div>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "UpdateRequest" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Updating request failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="left" style="width: 600px">
+                    <p>
+                        Unable to update the request.
+                        <br />
+                        Below are some of the possible reasons why the request failed to update:
+                        <br />
+
+                        <ul>
+                            <li>The required fields are empty.</li>
+                            <li>The file types of the documents are not supported.</li>
+                        </ul>
+                    </p>
+                </div>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "EditRequest" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Updating request failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 500px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="center" style="width: 400px">
+                    <p>
+                        Please select a request to edit.
+                    </p>
+                </div>
+                <br />
+            </div>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "CancelRequest" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <div style="height: 2rem"></div>
+            <h2 style="background-color: white; width: fit-content">Cancelling request failed</h2>
+            <br />
+
+            <img src="~/images/error-icon.png" height="200" />
+            <br />
+            <br />
+
+            <div align="center" style="width: 700px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+                <br />
+                <div align="center" style="width: 600px">
+
+                    @if (!this.Context.Request.Query.ContainsKey("Reason"))
+                    {
+                        <p>
+                            The process to cancel this request failed. Below are some of the possible reasons:<br />
+
+                            <div align="left" style="width: 600px">
+                                <ul>
+                                    <li>You do not have permission to delete this request because it belongs to another user.</li>
+                                    <li>The request is already deleted.</li>
+                                    <li>The request does not exist.</li>
+                                </ul>
+                            </div>
+                        </p>
+                    }
+                    else
+                    {
+                        if(this.Context.Request.Query["Reason"] == "NotPending")
+                        {
+                            <p>
+                                The process to cancel this request failed. The status of this request must be pending, in order to cancel it.
+                            </p>
+                        }
+                    }
+                </div>
+                <br />
+            </div>
+        }
+    }
+
+    <br />
+
+    @{
+        if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Success")
+        {
+            string? userId = this.Context.Request.Query["UserId"];
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserLogin?UserId=@userId'">Login Now</button>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserRegistration'">Try Again</button>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "UserLogin" && this.Context.Request.Query["Status"] == "Failed")
+        {
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserLogin'">Try Again</button>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "NewRequest" || 
+        this.Context.Request.Query["ActionName"] == "UpdateRequest" && 
+        this.Context.Request.Query["Status"] == "Failed")
+        {
+            var action = this.Context.Request.Query["ActionName"];
+            <button class="button-class button-class-small" onclick="window.location = '/Request/NewRequest?ActionName=@action'">Try Again</button>
+        }
+
+        if (this.Context.Request.Query["ActionName"] == "EditRequest" || this.Context.Request.Query["ActionName"] == "CancelRequest")
+        {
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Try Again</button>
+        }
+    }
+</div>
+

@@ -1,0 +1,364 @@
+﻿@model List<CMCSDocument>
+
+@{
+    string? sAction = this.Context.Request.Query["ActionName"];
+
+    if (sAction == "NewRequest")
+        ViewData["Title"] = "New Request";
+
+    if (sAction == "EditRequest")
+        ViewData["Title"] = "Edit Request";
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        let documents = [];
+        let documentCount = 0;
+        let documentCount2 = parseInt(document.getElementById("DocumentCount").value, 10);
+        let selectedIndex = -1;
+        let selectedIndex2 = -1;
+
+        let deletedDocuments = [];
+
+
+        function row_selected(index) {
+            if (selectedIndex == index)
+                selectedIndex = -1;
+            else
+                selectedIndex = index;
+
+            DisplayDocuments();
+
+            if (selectedIndex2 != -1) {
+                document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = EMPTY_STRING;
+                selectedIndex2 = -1;
+            }
+        }
+
+        function row_selected2(index) {
+            if (selectedIndex2 != -1) { 
+                document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = EMPTY_STRING;
+            }
+
+            if (selectedIndex2 == index)
+                selectedIndex2 = -1;
+            else { 
+                selectedIndex2 = index;
+                document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+            }
+
+            selectedIndex = -1;
+            DisplayDocuments();
+        }
+
+        function DisplayDocuments() {
+            if (documentCount > 0) {
+                let html = "<table style='width: 100%'>";
+
+                for (let i = 0; i < documents.length; i++) {
+                    if (i == selectedIndex) {
+                        html += "<tr style='background-color: rgba(255, 0, 0, 0.4);' onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + documents[i].size + "</td></tr>";
+                    }
+                    else {
+                        html += "<tr onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + documents[i].size + "</td></tr>";
+                    }
+                }
+
+                html += "</table>";
+                document.getElementById("documentList2").innerHTML = html;
+            }
+            else {
+                if(documentCount2 == 0)
+                    document.getElementById("documentList2").innerHTML = "<br /><b>No files uploaded</b><br /><br />";
+            }
+        }
+
+        function UploadDocument() {
+            let fileDialog = document.createElement("input");
+            fileDialog.type = "file";
+            fileDialog.click();
+
+            fileDialog.onchange = function () {
+                for (let i = 0; i < fileDialog.files.length; i++) {
+                    documents[documentCount + i] = fileDialog.files[i];
+                }
+
+                documentCount += fileDialog.files.length;
+                DisplayDocuments();
+            }
+        }
+
+        function DeleteDocument() {
+            if (selectedIndex != -1) {
+                let list = [];
+
+                for (let i = 0; i < selectedIndex; i++) {
+                    list[i] = documents[i];
+                }
+
+                for (let i = selectedIndex + 1; i < documents.length; i++) {
+                    list[i - selectedIndex] = documents[i];
+                }
+
+                documents = list;
+                selectedIndex = -1;
+                DisplayDocuments();
+            }
+            else {
+                if (selectedIndex2 != -1) {
+                    let element = document.getElementById("_ROW-" + selectedIndex2);
+                    deletedDocuments[deletedDocuments.length] = element.getAttribute("data-document");
+                    element.remove();
+
+                    // Remove the row from the table.
+                    selectedIndex2 = -1;
+                }
+                else {
+                    alert('No document selected.');
+                }
+            }
+        }
+
+        function DeleteAllDocuments() { 
+            documents = [];
+            documentCount = 0;
+
+            deletedDocuments = "DELETE_ALL";
+
+            selectedIndex = -1;
+            selectedIndex2 = -1;
+
+            document.getElementById("existing-documents").innerHTML = EMPTY_STRING;
+            DisplayDocuments();
+        }
+
+        function SubmitRequest() {
+            let requestFor = document.getElementById("txtRequestFor").value;
+            let hoursWorked = document.getElementById("txtHoursWorked").value;
+            let hourlyRate = document.getElementById("txtHourlyRate").value;
+            let description = document.getElementById("txtDescription").value;
+
+            let validation = requestFor.length > 0 &&
+                hoursWorked.length > 0 &&
+                hourlyRate.length > 0 &&
+                description.length > 0;
+
+            if (validation) {
+                let SupportingDocuments = [];
+                let documentsRead = 0;
+
+                for (let i = 0; i < documents.length; i++) {
+                    SupportingDocuments[i] = new Object();
+                    SupportingDocuments[i].Name = documents[i].name;
+                    SupportingDocuments[i].Size = documents[i].size;
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(documents[i]);
+
+                    reader.onloadend = function () {
+                        SupportingDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        documentsRead++;
+                    }
+                }
+
+                let interval = setInterval(function () {
+                    if (documentsRead == documents.length) {
+                        let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments };
+                        POST_DATA("/Request/NewRequest?ActionName=NewRequest", JSON.stringify(requestData), RequestSubmitted);
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+            else {
+                window.location = "/Home/Status?ActionName=NewRequest&Status=Failed";
+            }
+        }
+
+        function RequestSubmitted(status) {
+            if (status == 1) {
+                window.location = "/UserAccount/UserAccount";
+            }
+
+            if (status == 2) {
+                window.location = "/Home/Status?ActionName=NewRequest&Status=Failed";
+            }
+        }
+
+        function UpdateRequest() {
+            let requestFor = document.getElementById("txtRequestFor").value;
+            let hoursWorked = document.getElementById("txtHoursWorked").value;
+            let hourlyRate = document.getElementById("txtHourlyRate").value;
+            let description = document.getElementById("txtDescription").value;
+
+            let validation = requestFor.length > 0 &&
+                hoursWorked.length > 0 &&
+                hourlyRate.length > 0 &&
+                description.length > 0;
+
+            if (validation) {
+                let SupportingDocuments = [];
+                let documentsRead = 0;
+
+                for (let i = 0; i < documents.length; i++) {
+                    SupportingDocuments[i] = new Object();
+                    SupportingDocuments[i].Name = documents[i].name;
+                    SupportingDocuments[i].Size = documents[i].size;
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(documents[i]);
+
+                    reader.onloadend = function () {
+                        SupportingDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        documentsRead++;
+                    }
+                }
+                
+                let interval = setInterval(function () {
+                    if (documentsRead == documents.length) {
+                        let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments, "DeletedDocuments": deletedDocuments };
+                        let requestID = document.getElementById("RequestID").value;
+
+                        POST_DATA("/Request/NewRequest?ActionName=EditRequest&RequestID=" + requestID, JSON.stringify(requestData), RequestUpdated);
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+            else {
+                window.location = "/Home/Status?ActionName=UpdateRequest&Status=Failed";
+            }
+        }
+
+        function RequestUpdated(status) {
+            if (status == 1) { 
+                window.location = "/UserAccount/UserAccount";
+            }
+
+            if (status == 2) {
+                window.location = "/Home/Status?ActionName=UpdateRequest&Status=Failed";
+            }
+        }
+
+    </script>
+}
+
+<input type="hidden" value="@Model?.Count" id="DocumentCount" />
+<input type="hidden" value="@ViewData?["RequestID"]" id="RequestID" />
+
+<div align="center">
+    <br />
+    <div style="width: 600px">
+        <div style="background-color: rgb(35, 35, 35); background-image: radial-gradient(#2b5679, rgb(35, 35, 35)); border-radius: 16px">
+            <br />
+            @{
+                if (sAction == "NewRequest")
+                {
+                                                    <img src="~/images/new-icon-large.png" height="180" />
+                }
+
+                if (sAction == "EditRequest")
+                {
+                                                    <img src="~/images/edit-icon-large.png" height="180" />
+                }
+            }
+            <br />
+            <br />
+        </div>
+        <div style="height: 2rem"></div>
+
+        <h3 align="left">@ViewData["Title"]</h3>
+        <br />
+
+        <table style="width: 600px" cellpadding="4">
+            <tr>
+                <th>Request/Claim for:</th>
+                <td><input id="txtRequestFor" type="text" value="@ViewData["RequestFor"]" style="width: 300px" /></td>
+            </tr>
+            <tr>
+                <th>Hours Worked:</th>
+                <td><input id="txtHoursWorked" type="text" value="@ViewData["HoursWorked"]" style="width: 200px" /></td>
+            </tr>
+            <tr>
+                <th>Hourly Rate:</th>
+                <td><input id="txtHourlyRate" type="text" value="@ViewData["HourlyRate"]" style="width: 200px" /></td>
+            </tr>
+        </table>
+
+        <br />
+        <p align="left"><b>Supporting Documents (Size Limit: 10 MB)</b></p>
+
+        <div style="background-color: white">
+            <table style="width: 600px">
+                <tr style="background-color: rgb(220, 220, 220)">
+                    <th style="width: 50%">FileName</th>
+                    <th style="width: 25%">Type</th>
+                    <th style="width: 25%">Size (MB)</th>
+                </tr>
+            </table>
+            <div id="documentList" style="overflow-y: auto">
+                @if (this.Context.Request.Method == "GET" && this.Context.Request.Query["ActionName"] == "EditRequest")
+                {
+                    if (this.Model.Count > 0)
+                    {
+                        <table id="existing-documents" style="width: 100%">
+
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <tr id="_ROW-@i" data-document="@Model[i].DocumentID" onclick='row_selected2(@i)'><td style='width: 50%'>@Model[i].Name</td><td style='width: 25%'>@Model[i].Type</td><td style='width: 25%'>@Model[i].Size</td></tr>
+                            }
+
+                        </table>
+
+                        <div id="documentList2"></div>
+                    }
+                    else
+                    {
+                        <div id="documentList2">
+                            <br />
+                            <b>No files uploaded.</b>
+                            <br />
+                            <br />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div id="documentList2">
+                        <br />
+                        <b>No files uploaded.</b>
+                        <br />
+                        <br />
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div align="left">
+            <button class="button-class button-class-small2" onclick="UploadDocument()">Upload</button>
+            <button class="button-class button-class-small2" onclick="DeleteDocument()">Delete</button>
+            <button class="button-class button-class-small2" onclick="DeleteAllDocuments()">Delete All</button>
+        </div>
+        <br />
+        <div align="left">
+            <b>Additional Notes (Description)</b>
+            <textarea id="txtDescription" style="width: 600px; height: 200px">@ViewData["Description"]</textarea>
+        </div>
+        <br />
+        <div align="right">
+            @{
+                if (sAction == "NewRequest")
+                {
+                                                    <button class="button-class button-class-small" onclick="SubmitRequest()">Submit</button>
+                                                    <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+                }
+
+                if (sAction == "EditRequest")
+                {
+                                                    <button class="button-class button-class-small" onclick="UpdateRequest()">Update</button>
+                                                    <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+                }
+            }
+        </div>
+    </div>
+</div>

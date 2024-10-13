@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>CMCS - View Request Information</title>
+    <link rel="icon" type="image/x-icon" href="../images/cmcs-logo.png" />
+    <style type="text/css">
+
+        body {
+            background-color: white;
+        }
+    </style>
+    <script src="../js/site.js"></script>
+    <script type="text/javascript">
+
+        let queryString = window.location.search;
+        let query = new URLSearchParams(queryString);
+        let requestId = query.get("RequestID");
+
+        GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", requestId]], function (request) {
+            let requestId = request.getResponseHeader("RequestID");
+            let lecturerId = request.getResponseHeader("LecturerID");
+            let identityNumber = request.getResponseHeader("IdentityNumber");
+            let lecturer = request.getResponseHeader("Lecturer");
+            let requestFor = request.getResponseHeader("RequestFor");
+            let hoursWorked = request.getResponseHeader("HoursWorked");
+            let hourlyRate = request.getResponseHeader("HourlyRate");
+            let description = request.getResponseHeader("Description");
+
+            document.getElementById("lblRequestID").innerHTML = requestId;
+            document.getElementById("lblLecturerID").innerHTML = lecturerId;
+            document.getElementById("lblIdentityNumber").innerHTML = identityNumber;
+            document.getElementById("lblLecturer").innerHTML = lecturer;
+            document.getElementById("lblRequestFor").innerHTML = requestFor;
+            document.getElementById("lblHoursWorked").innerHTML = hoursWorked;
+            document.getElementById("lblHourlyRate").innerHTML = hourlyRate;
+            document.getElementById("lblDescription").innerHTML = description;
+        });
+
+    </script>
+</head>
+<body>
+    <div align="center">
+        <h2>View Request Information</h2>
+        <table border="1" style="width: 500px">
+            <tr>
+                <th style="width: 40%">Request ID</th>
+                <td style="width: 60%"><span id="lblRequestID"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Lecturer ID</th>
+                <td style="width: 60%"><span id="lblLecturerID"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Lecturer Identity Number</th>
+                <td style="width: 60%"><span id="lblIdentityNumber"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Lecturer</th>
+                <td style="width: 60%"><span id="lblLecturer"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Request/Claim for</th>
+                <td style="width: 60%"><span id="lblRequestFor"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Hours Worked</th>
+                <td style="width: 60%"><span id="lblHoursWorked"></span></td>
+            </tr>
+            <tr>
+                <th style="width: 40%">Hourly Rate</th>
+                <td style="width: 60%"><span id="lblHourlyRate"></span></td>
+            </tr>
+        </table>
+        <br />
+        <div style="width: 500px; text-align: left">
+            <b>Additional Notes (Description):</b><br />
+            <span id="lblDescription"></span>
+        </div>
+    </div>
+</body>
+</html>

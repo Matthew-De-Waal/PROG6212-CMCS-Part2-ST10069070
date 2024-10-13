@@ -1,0 +1,165 @@
+﻿@{
+    ViewData["Title"] = "UpdateUserProfile";
+}
+
+<div align="center">
+    <div style="width: 650px">
+        <br />
+        <div style="background-color: rgb(35, 35, 35); background-image: radial-gradient(#2b5679, rgb(35, 35, 35)); border-radius: 16px">
+            <br />
+            <img src="~/images/account-icon-large.png" height="180" />
+            <br />
+            <br />
+        </div>
+        <div style="height: 2rem"></div>
+
+        <h3 align="left">Manage Your Account</h3>
+        <br />
+
+        <div style="text-align: left">
+            <b>Required fields are marked with an asterisk (*)</b>
+        </div>
+        <br />
+
+        <table style="width: 650px" cellpadding="4">
+
+            <tr>
+                <th>User Account Type: <span class="red-asterisk">*</span></th>
+                <td><input type="radio" id="rdLecturer" checked /> Lecturer &nbsp; <input type="radio" id="rdManager" /> Manager (Admin)</td>
+            </tr>
+
+            <tr>
+                <th>First Name: <span class="red-asterisk">*</span></th>
+                <td><input type="text" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <th>Last Name: <span class="red-asterisk">*</span></th>
+                <td><input type="text" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <th>Identity Number (ID): <span class="red-asterisk">*</span></th>
+                <td><input type="text" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <th>Email Address: <span class="red-asterisk">*</span></th>
+                <td><input type="text" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <br />
+                    <hr />
+                    <b>Qualification Document(s): <span class="red-asterisk">*</span></b>
+                    <br />
+                    <div>
+                        <table style="width: 100%">
+                            <tr style="background-color: rgb(220, 220, 220)">
+                                <th style="width: 50%">FileName</th>
+                                <th style="width: 25%">Type</th>
+                                <th style="width: 25%">Size (MB)</th>
+                            </tr>
+                        </table>
+                        <div id="qualifications" style="background-color: white; height: 150px; overflow-x: hidden; overflow-y: auto">
+                        </div>
+                        <div align="right">
+                            <button class="button-class button-class-small2">Upload</button>
+                            <button class="button-class button-class-small2">Delete</button>
+                            <button class="button-class button-class-small2">Delete All</button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <br />
+                    <hr />
+                    <b>Proof of Identity Document(s): <span class="red-asterisk">*</span></b>
+                    <br />
+                    <div>
+                        <table style="width: 100%">
+                            <tr style="background-color: rgb(220, 220, 220)">
+                                <th style="width: 50%">FileName</th>
+                                <th style="width: 25%">Type</th>
+                                <th style="width: 25%">Size (MB)</th>
+                            </tr>
+                        </table>
+                        <div id="identity" style="background-color: white; height: 150px; overflow-x: hidden; overflow-y: auto">
+                        </div>
+                        <div align="right">
+                            <button class="button-class button-class-small2">Upload</button>
+                            <button class="button-class button-class-small2">Delete</button>
+                            <button class="button-class button-class-small2">Delete All</button>
+                        </div>
+                    </div>
+                    <br />
+                </td>
+            </tr>
+
+            <tr style="height: 1rem"></tr>
+
+            <tr>
+                <th><input type="checkbox" id="chkRecoveryMethod1" style="color: red" />Recovery Method 1: Recovery File:</th>
+                <td>
+                    <button class="button-class button-class-small2 button-class-auto-wide">Generate New</button>
+                    <button class="button-class button-class-small2 button-class-auto-wide">Download</button>
+                </td>
+            </tr>
+
+            <tr>
+                <th><input type="checkbox" id="chkRecoveryMethod2" style="color: red" />Recovery Method 2: Security Question</th>
+                <td>
+                    <table cellpadding="3">
+                        <tr>
+                            <th>Question:</th>
+                            <td><input type="text" style="width: 300px" id="txtSecurityQuestion" /></td>
+                        </tr>
+                        <tr>
+                            <th>Answer:</th>
+                            <td><input type="text" style="width: 300px" id="txtAnswer" /></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+
+            <tr style="height: 2rem"></tr>
+
+            <tr>
+                <td colspan="2">
+                    <b>
+                        Enter your current and new password if you want to change your password,<br />
+                        otherwise leave these fields empty.<br /><br />
+                    </b>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Current Password:</th>
+                <td><input type="password" value="" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <th>New Password:</th>
+                <td><input type="password" value="" style="width: 100%" /></td>
+            </tr>
+
+            <tr>
+                <th>Confirm New Password:</th>
+                <td><input type="password" value="" style="width: 100%" /></td>
+            </tr>
+
+        </table>
+        <br />
+        <br />
+
+        <div align="right" style="width: 600px">
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Update</button>
+            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "UserLogin";
+
+    string? userId = this.Context.Request.Query["UserId"];
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function UserLogin() {
+            let userId = document.getElementById("txtUserID").value;
+            let userPassword = document.getElementById("txtPassword").value;
+            
+            POST_DATA("/UserAccount/UserLogin", JSON.stringify({ "UserId": userId, "Password": userPassword }), UserLoginResult);
+        }
+
+        function UserLoginResult(status) {
+            if (status == 1) {
+                window.location = "/UserAccount/UserAccount";
+            }
+
+            if (status == 2) {
+                window.location = "/Home/Status?ActionName=UserLogin&Status=Failed";
+            }
+
+            if(status == 3)
+            {
+                window.location = "/Request/ManageRequests";
+            }
+        }
+
+    </script>
+
+}
+
+
+<div align="center" class="content-background">
+    <div style="height: 2rem"></div>
+    <img src="~/images/user-profile.png" height="180" />
+    <div style="height: 2rem"></div>
+    <h2 style="background-color: white; width: fit-content">Authentication</h2>
+    <br />
+
+    <div align="center" style="width: 640px; background-color: rgb(50, 50, 50); color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+        <br />
+        <div align="center" style="width: 570px">
+            <p>
+                Welcome to the Contract Monthly Claim System (CMCS) Login Page.<br />
+                Provide your User ID and Password to authenticate and authorize your account.<br />
+                Don't have an account yet. <a href="/UserAccount/UserRegistration" style="color: red">Create One Now</a>
+            </p>
+        </div>
+        <br />
+    </div>
+
+    <br />
+    <br />
+
+    <!-- User Credentials-->
+    <div align="center" style="display: inline-flex">
+        <img src="~/images/authenticate-icon.png" height="100" />
+        <div style="width: 20px"></div>
+        <div style="display: block">
+            <table style="width: 400px" cellpadding="4">
+                <tr>
+                    <td>
+                        <span>User ID:</span>
+                    </td>
+                    <td>
+                        @{
+                            if (userId == null)
+                            {
+                                <input id="txtUserID" value="" type="text" style="width: 100%" />
+                            }
+                            else
+                            {
+                                <input id="txtUserID" value="@userId" type="text" style="width: 100%" />
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span>Password: </span>
+                    </td>
+                    <td>
+                        <input id="txtPassword" value="" type="password" style="width: 100%" />
+                    </td>
+                </tr>
+            </table>
+            <div align="right" style="width: 400px">
+                <a href="/UserAccount/UserForgotPassword" style="color: red">Forgot Password</a>
+                <br />
+                <br />
+
+                <input id="btnLogin" class="button-class" value="Login" type="button" style="width: 140px; height: 33px" onclick="UserLogin()" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "TrackRequest";
+
+    string? requestID = this.Context.Request.Query["RequestID"];
+    string? dateSubmitted = string.Empty;
+    string? status = string.Empty;
+    string? approvedBy = string.Empty;
+
+    if(requestID != null)
+    {
+        string sql = $"SELECT * FROM Request WHERE RequestID = {requestID}";
+
+        CMCSDB.OpenConnection();
+        var reader = CMCSDB.RunSQLResult(sql);
+        reader.Read();
+
+        dateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString()).ToString("yyyy/MM/dd HH:mm:ss");
+        status = reader["RequestStatus"].ToString();
+
+        reader.Close();
+
+        string sql3 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestID}";
+        reader = CMCSDB.RunSQLResult(sql3);
+
+        if (reader.HasRows)
+        {
+            reader.Read();
+            int managerID = Convert.ToInt32(reader["ManagerID"].ToString());
+            reader.Close();
+
+            string sql2 = $"SELECT FirstName, LastName FROM Manager WHERE ManagerID = {managerID}";
+            reader = CMCSDB.RunSQLResult(sql2);
+            reader.Read();
+
+            approvedBy = $"{reader["FirstName"]} {reader["LastName"]}";
+        }
+
+        reader.Close();
+        CMCSDB.CloseConnection();
+    }
+}
+
+<div align="center">
+
+    <div style="width: 600px">
+        <br />
+        <div style="background-color: rgb(35, 35, 35); background-image: radial-gradient(#2b5679, rgb(35, 35, 35)); border-radius: 16px">
+            <br />
+            <img src="~/images/track-icon-large.png" height="180" />
+            <br />
+            <br />
+        </div>
+        <div style="height: 2rem"></div>
+
+        <h3>Track Request</h3>
+        <div style="height: 0.5rem"></div>
+
+        <div align="center" style="width: 500px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+            <div style="height: 1rem"></div>
+            <table style="width: 80%">
+                <tr>
+                    <th>Request ID:</th>
+                    <td>@requestID</td>
+                </tr>
+                <tr>
+                    <th>Date Submitted:</th>
+                    <td>@dateSubmitted</td>
+                </tr>
+                <tr>
+                    <th>Status:</th>
+
+                    @if (status == "Approved")
+                    {
+                        <td><span style="background-color: black; color: lawngreen; width: fit-congtent">@status</span></td>
+                    }
+                    else if(status == "Rejected")
+                    {
+                        <td><span style="background-color: black; color: red; width: fit-content">@status</span></td>
+                    }
+                    else
+                    {
+                        <td>@status</td>
+                    }
+                </tr>
+                <tr>
+                    <th>Approved by:</th>
+                    <td>@approvedBy</td>
+                </tr>
+            </table>
+            <div style="height: 1rem"></div>
+        </div>
+
+        <div style="height: 2rem"></div>
+        <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Close</button>
+    </div>
+</div>

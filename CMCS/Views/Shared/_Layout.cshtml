@@ -1,0 +1,96 @@
+﻿@{
+    string lecturerID = "<Lecturer_ID>";
+    string fullName = "<Full_Name>";
+    string emailAddress = "<Email_Address>";
+
+    if (CMCSMain.User.LoggedOn)
+    {
+        fullName = $"{CMCSMain.User.FirstName} {CMCSMain.User.LastName}";
+        lecturerID = CMCSMain.User.IdentityNumber;
+        emailAddress = CMCSMain.User.EmailAddress;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CMCS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CMCS.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/x-icon" href="~/images/cmcs-logo.png" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar border-bottom box-shadow">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Contract Monthly Claim System</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="ContactUs">Contact Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
+                        </li>
+                    </ul>
+
+                    @if (CMCSMain.User.LoggedOn)
+                    {
+                        <ul id="user-account-info" class="navbar-nav">
+                            <li class="nav-item">
+                                <b>@fullName</b> &nbsp; | &nbsp;
+                            </li>
+                            <li class="nav-item">
+                                <b>@lecturerID</b> &nbsp; | &nbsp;
+                            </li>
+                            <li class="nav-item">
+                                <b>@emailAddress</b> &nbsp; | &nbsp;
+                            </li>
+                            <li class="nav-item">
+                                <button class="button-class button-class-small3" onclick="window.location = '/UserAccount/UserLogout'"><img src="~/images/logout-icon.png" height="24" />Logout</button>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div>
+        <div id="main-screen" style="position: relative; width: 100%; z-index: 0">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+        <div hidden align="center" id="loading-screen" style="position: absolute; z-index: 1; width: 100%; height: 50%; top: 25%; background-color: rgba(0, 0, 0, 0.8);">
+
+            <table style="height: 100%;">
+                <tr>
+                    <td style="vertical-align: central">
+                        <img src="~/images/loading-icon.gif" style="height: 200px" />
+                        <br />
+                        <br />
+                        <p style="text-align: center"><h4 style="color: white">Loading, please wait...</h4></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <footer class="border-top footer">
+        <div class="container">
+            &copy; 2024 - CMCS - ST10069070
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

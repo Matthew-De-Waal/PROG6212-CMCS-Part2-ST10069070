@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        document.body.style.backgroundImage = "url('/images/background3.png')";
+        document.body.style.backgroundRepeat = "no-repeat";
+
+    </script>
+
+}
+
+<div align="center">
+    <table style="height: 80vh">
+        <tr>
+            <td align="center" style="vertical-align: central">
+                <div class="border-class1 background-style1" style="width: 800px">
+                    <br />
+                    <div style="display: inline-flex">
+                        <img src="~/images/cmcs-logo.png" height="180" />
+                        &nbsp;&nbsp;
+                        <div>
+                            <div style="height: 4rem"></div>
+                            <h1 style="color: white; font-size: 50pt">CMCS</h1>
+                        </div>
+                    </div>
+
+                    <br />
+                    <br />
+                    <br />
+                    <div align="center" class="content-background">
+                        <b class="text-style1">Welcome to the<br /></b>
+                        <h2 class="text-style1">
+                            Contract Monthly Claim System (CMCS)
+                        </h2>
+                        <p class="text-style1">A place for you to submit your claim with us.</p>
+                        <br />
+
+                        <!-- User Credentials-->
+                        <div align="center" class="homepage-style">
+                            <br />
+
+                            @if (!CMCSMain.User.LoggedOn)
+                            {
+                                <button class="button-class" onclick="window.location = '/UserAccount/UserLogin';">Start Now</button>
+                            }
+                            else
+                            {
+                                if (CMCSMain.User.IsManager)
+                                {
+                                    <button class="button-class" onclick="window.location = '/Request/ManageRequests';">Start Now</button>
+                                }
+                                else
+                                {
+                                    <button class="button-class" onclick="window.location = '/UserAccount/UserAccount';">Start Now</button>
+                                }
+                            }
+                            <br />
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

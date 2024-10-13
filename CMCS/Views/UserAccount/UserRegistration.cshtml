@@ -1,0 +1,239 @@
+﻿@{
+    ViewData["Title"] = "UserRegistration";
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+    
+        let qualificationDocuments = [];
+        let identityDocuments = [];
+
+        function rdLecturer_onclick() { 
+            document.getElementById("rdLecturer").checked = true;
+            document.getElementById("rdManager").checked = false;
+        }
+
+        function rdManager_onclick() {
+            document.getElementById("rdLecturer").checked = false;
+            document.getElementById("rdManager").checked = true;
+        }
+
+        function UploadQualificationDocuments() { 
+            let fileElement = document.createElement("input");
+            fileElement.type = "file";
+            fileElement.multiple = true;
+            fileElement.click();
+
+            fileElement.onchange = function() {
+                qualificationDocuments = fileElement.files;
+                document.getElementById("fileCount1").innerHTML = fileElement.files.length + " file(s) selected.";
+            }
+        }
+
+        function UploadIdentityDocuments() {
+            let fileElement = document.createElement("input");
+            fileElement.type = "file";
+            fileElement.multiple = true;
+            fileElement.click();
+
+            fileElement.onchange = function () {
+                identityDocuments = fileElement.files;
+                document.getElementById("fileCount2").innerHTML = fileElement.files.length + " file(s) selected.";
+            }
+        }
+
+        function SubmitRegistration() {
+            // Variable declarations
+            let userAccountType = EMPTY_STRING;
+            let userFirstName = EMPTY_STRING;
+            let userLastName = EMPTY_STRING;
+            let userIdentityNumber = EMPTY_STRING;
+            let userEmailAddress = EMPTY_STRING;
+            let userPassword = EMPTY_STRING;
+            let userPasswordConfirmed = EMPTY_STRING;
+
+            // Obtain the user details from the registration form.
+            if (document.getElementById("rdLecturer").checked) {
+                userAccountType = "STANDARD";
+            }
+            else
+            {
+                userAccountType = "ADMIN";
+            }
+
+            userFirstName = document.getElementById("txtFirstName").value;
+            userLastName = document.getElementById("txtLastName").value;
+            userIdentityNumber = document.getElementById("txtIdentityNumber").value;
+            userEmailAddress = document.getElementById("txtEmailAddress").value;
+            userPassword = document.getElementById("txtPassword").value;
+            userPasswordConfirmed = document.getElementById("txtPasswordConfirmed").value;
+
+            // Validation process
+            let validation = userFirstName.length > 0 &&
+                userLastName.length > 0 &&
+                userIdentityNumber.length > 0 &&
+                userEmailAddress.length > 0 &&
+                userPassword == userPasswordConfirmed &&
+                IsStrongPassword(userPassword) &&
+                qualificationDocuments.length > 0 &&
+                identityDocuments.length > 0;
+
+            if (validation) {
+                // Declare and instantiate an anonymous object.
+                let userData = new Object();
+
+                // Assign the details to 'userData'.
+                userData.UserAccountType = userAccountType;
+                userData.FirstName = userFirstName;
+                userData.LastName = userLastName;
+                userData.IdentityNumber = userIdentityNumber;
+                userData.EmailAddress = userEmailAddress;
+                userData.Password = userPassword;
+                userData.QualificationDocuments = [];
+                userData.IdentityDocuments = [];
+                let count = 0;
+
+
+                // Iterate through the 'qualificationDocuments' array.
+                for (let i = 0; i < qualificationDocuments.length; i++) {
+                    let reader = new FileReader();
+                    reader.readAsDataURL(qualificationDocuments[i]);
+
+                    reader.onloadend = function () {
+                        userData.QualificationDocuments[i] = new Object();
+                        userData.QualificationDocuments[i].Name = qualificationDocuments[i].name;
+                        userData.QualificationDocuments[i].Size = qualificationDocuments[i].size;
+                        userData.QualificationDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        count++;
+                    }
+                }
+
+                // Iterate through the 'identityDocuments' array.
+                for (let i = 0; i < identityDocuments.length; i++) {
+                    let reader = new FileReader();
+                    reader.readAsDataURL(identityDocuments[i]);
+
+                    reader.onloadend = function () {
+                        userData.IdentityDocuments[i] = new Object();
+                        userData.IdentityDocuments[i].Name = identityDocuments[i].name;
+                        userData.IdentityDocuments[i].Size = identityDocuments[i].size;
+                        userData.IdentityDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        count++;
+                    }
+                }
+
+                let interval = setInterval(function () {
+                    if (count == (qualificationDocuments.length + identityDocuments.length)) {
+                        POST_DATA("/UserAccount/UserRegistration", JSON.stringify(userData), RegistrationSubmitted);
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+            else
+            {
+                RegistrationSubmitted(2);
+            }
+        }
+
+        function RegistrationSubmitted(status) {
+            let isLecturer = document.getElementById("rdLecturer").checked;
+            
+            if(status == 1)
+            {
+                let userId = document.getElementById("txtIdentityNumber").value;
+                window.location = "/Home/Status?ActionName=RegisterUser&Status=Success&UserId=" + userId + "&Role=" + (isLecturer ? "Lecturer" : "Manager");
+            }
+
+            if(status == 2)
+            {
+                window.location = "/Home/Status?ActionName=RegisterUser&Status=Failed&Role=" + (isLecturer ? "Lecturer" : "Manager");
+            }
+        }
+
+    </script>
+
+}
+
+<div align="center" class="content-background">
+    <div style="height: 2rem"></div>
+    <img src="~/images/user-profile.png" height="180" />
+    <div style="height: 2rem"></div>
+
+    <h2 style="background-color: white; width: fit-content">Registration</h2>
+    <br />
+
+    <div align="center" style="width: 640px; background-color: rgb(50, 50, 50); color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
+        <br />
+        <div align="center" style="width: 570px">
+            <p>
+                Please complete the form below to create your user account.<br />
+                <b>Note: </b>PDF and XLSX documents are supported only. Size Limit: 20 MB
+            </p>
+        </div>
+        <br />
+    </div>
+
+    <br />
+
+    <b>Required fields are marked with an asterisk (*)</b>
+    <br />
+    <br />
+
+    <!-- Registration Form -->
+    <table style="width: 600px" cellpadding="4">
+
+        <tr>
+            <th>User Account Type: <span class="red-asterisk">*</span></th>
+            <td><input type="radio" id="rdLecturer" onclick="rdLecturer_onclick()" checked /> Lecturer &nbsp; <input type="radio" id="rdManager" onclick="rdManager_onclick()" /> Manager (Admin)</td>
+        </tr>
+
+        <tr>
+            <th>First Name: <span class="red-asterisk">*</span></th>
+            <td><input type="text" id="txtFirstName" style="width: 100%" /></td>
+        </tr>
+
+        <tr>
+            <th>Last Name: <span class="red-asterisk">*</span></th>
+            <td><input type="text" id="txtLastName" style="width: 100%" /></td>
+        </tr>
+
+        <tr>
+            <th>Identity Number (ID): <span class="red-asterisk">*</span></th>
+            <td><input type="text" id="txtIdentityNumber" style="width: 100%" /></td>
+        </tr>
+
+        <tr>
+            <th>Email Address: <span class="red-asterisk">*</span></th>
+            <td><input type="text" id="txtEmailAddress" style="width: 100%" /></td>
+        </tr>
+
+        <tr>
+            <th>Qualification Document(s): <span class="red-asterisk">*</span></th>
+            <td><button class="button-class button-class-small2" onclick="UploadQualificationDocuments()">Upload</button>&nbsp;&nbsp;<span id="fileCount1">No file(s) selected</span></td>
+        </tr>
+
+        <tr>
+            <th>Proof of Identity Document(s): <span class="red-asterisk">*</span></th>
+            <td><button class="button-class button-class-small2" onclick="UploadIdentityDocuments()">Upload</button>&nbsp;&nbsp;<span id="fileCount2">No file(s) selected</span></td>
+        </tr>
+
+        <tr>
+            <th>Password: <span class="red-asterisk">*</span></th>
+            <td><input type="password" id="txtPassword" value="" style="width: 100%" /></td>
+        </tr>
+
+        <tr>
+            <th>Confirm Password: <span class="red-asterisk">*</span></th>
+            <td><input type="password" id="txtPasswordConfirmed" value="" style="width: 100%" /></td>
+        </tr>
+    </table>
+
+    <br />
+    <br />
+
+    <div align="right" style="width: 600px">
+        <button class="button-class button-class-small" onclick="SubmitRegistration()">Register</button>
+        <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserLogin';">Cancel</button>
+    </div>
+</div>

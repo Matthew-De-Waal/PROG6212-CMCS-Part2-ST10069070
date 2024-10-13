@@ -1,0 +1,318 @@
+﻿@model List<CMCSRequest>
+
+@{
+    ViewData["Title"] = "ManageRequests";
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        let selectedIndex = -1;
+        let selectedIndex2 = -1;
+        let selectedRequestID = 0;
+
+        let queryString = window.location.search;
+        let query = new URLSearchParams(queryString);
+
+        if(query.has("RequestIndex"))
+        {
+            let requestIndex = parseInt(query.get("RequestIndex"), 10);
+            row_selected(requestIndex);
+        }
+
+        function row_selected(index) {
+            if (selectedIndex != -1) {
+                document.getElementById("ROW-" + selectedIndex).style.backgroundColor = "white";
+                document.getElementById("ROW-" + selectedIndex).style.color = "black";
+            }
+
+            if (selectedIndex == index) {
+                selectedIndex = -1;
+            }
+            else {
+                selectedIndex = index;
+                document.getElementById("ROW-" + selectedIndex).style.backgroundColor = "rgba(240, 0, 0, 0.8)";
+                document.getElementById("ROW-" + selectedIndex).style.color = "white";
+            }
+
+            if (selectedIndex != -1) {
+                selectedRequestID = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+                GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", selectedRequestID]], RequestSelected);
+            }
+            else {
+                document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
+            }
+        }
+
+        function row_selected2(index) {
+            if (selectedIndex2 != -1) {
+                document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "white";
+                document.getElementById("_ROW-" + selectedIndex2).style.color = "black";
+            }
+
+            if (selectedIndex2 == index) {
+
+                selectedIndex2 = -1;
+            }
+            else {
+                selectedIndex2 = index;
+                document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "rgba(240, 0, 0, 0.8)";
+                document.getElementById("_ROW-" + selectedIndex2).style.color = "white";
+            }
+        }
+
+        function AcceptRequest() {
+            if (selectedIndex != -1) {
+                POST_DATA2("/Request/ManageRequests", null, [["ActionName", "AcceptRequest"], ["RequestID", selectedRequestID]], RequestApproved);
+            }
+        }
+
+        function RequestApproved(status) {
+            if (status == 1) {
+                window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
+            }
+        }
+
+        function RejectRequest() {
+            if (selectedIndex != -1) {
+                POST_DATA2("/Request/ManageRequests", null, [["ActionName", "RejectRequest"], ["RowSelected", selectedIndex], ["RequestID", selectedRequestID]], RequestRejected);
+            }
+        }
+
+        function RequestRejected(status) {
+            if (status == 1) {
+                window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
+            }
+        }
+
+        function RequestSelected(request) {
+            let requestId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+            let lecturerId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer-id");
+            let lecturer = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer");
+            let dateSubmitted = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-submitted");
+            let dateApproved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-approved");
+            let approved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-approved");
+            let status = document.getElementById("ROW-" + selectedIndex).getAttribute("data-status");
+
+            document.getElementById("request-id").innerHTML = requestId;
+            document.getElementById("lecturer-id").innerHTML = lecturerId;
+            document.getElementById("lecturer").innerHTML = lecturer;
+            document.getElementById("date-submitted").innerHTML = dateSubmitted;
+            document.getElementById("date-approved").innerHTML = dateApproved;
+            document.getElementById("approved").innerHTML = approved;
+            document.getElementById("status").innerHTML = status;
+
+
+            let supportingDocuments = JSON.parse(request.response);
+
+            if (supportingDocuments.length > 0) {
+                let html = "<table style='width: 100%'>";
+
+                for (let i = 0; i < supportingDocuments.length; i++) {
+                    html += "<tr id='_ROW-" + i + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
+                }
+
+                html += "</table>";
+
+                document.getElementById("supporting-documents").innerHTML = html;
+            }
+            else {
+                document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
+            }
+        }
+
+        function DownloadDocument() {
+            if (selectedIndex2 != -1) {
+                let requestID = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+                GET_DATA("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["RequestID", requestID], ["FileIndex", selectedIndex2]], FileContentRecieved);
+            }
+            else {
+                alert("Please select a document to download.");
+            }
+        }
+
+        function FileContentRecieved(status, content) {
+            let filename = content.substring(1, content.lastIndexOf(']'));
+            let fileContent = content.substring(content.indexOf(']') + 1);
+
+            let element = document.createElement("a");
+            element.href = "data:application/octet-stream;base64," + fileContent;
+            element.download = filename;
+            element.click();
+        }
+
+        function UserLogout() {
+            window.location = "/UserAccount/UserLogout";
+        }
+
+        function ViewRequestInfo() { 
+            if (selectedIndex != -1) { 
+                window.open("../html/RequestInfo.html?RequestID=" + selectedRequestID, null, "width=720,height=500");
+            }
+        }
+
+    </script>
+
+}
+
+<div align="center">
+
+    <div style="width: 800px">
+        <br />
+        <div style="background-color: rgb(35, 35, 35); background-image: radial-gradient(#2b5679, rgb(35, 35, 35)); border-radius: 16px; width: 600px">
+            <br />
+            <img src="~/images/tools-icon-large.png" height="180" />
+            <br />
+            <br />
+        </div>
+        <div style="height: 3rem"></div>
+
+        <h3 align="left">Manage Requests</h3>
+        <div style="height: 1rem"></div>
+
+        <div style="background-color: white">
+            <table style="width: 800px; background-color: rgb(240, 240, 240)">
+                <tr style="background-color: rgb(220, 220, 220)">
+                    <th style="width: 15%">Request ID</th>
+                    <th style="width: 35%">Lecturer</th>
+                    <th style="width: 20%">Date</th>
+                    <th style="width: 10%">Approved</th>
+                    <th style="width: 20%">Status</th>
+                </tr>
+            </table>
+            <div style="overflow-y: scroll; overflow-x: hidden; height: 300px">
+                @if (this.Model.Count > 0)
+                {
+                    <table id="requestList" style="width: 800px">
+
+                        @{
+                            int count = 0;
+                        }
+
+                        @foreach (var request in Model)
+                        {
+                            string sApproved = request.RequestStatus == "Approved" ? "Yes" : "No";
+                            string? sDateSubmitted = request?.DateSubmitted?.ToString("dd/MM/yyyy HH:mm:ss");
+                            string? sDateApproved = request?.DateApproved?.ToString("dd/MM/yyyy HH:mm:ss");
+                            string? lecturer = ((string[])ViewData["LecturerNames"])[count];
+
+                            <tr id="ROW-@count" 
+                            data-request-id="@request.RequestID" 
+                            data-lecturer-id="@request.LecturerID"
+                            data-lecturer="@lecturer"
+                            data-date-submitted="@sDateSubmitted"
+                            data-date-approved="@sDateApproved"
+                            data-approved="@sApproved"
+                            data-status="@request.RequestStatus"
+                            onclick="row_selected(@count)" style="background-color: white">
+                                <td style="width: 15%;">@request.RequestID</td>
+                                <td style="width: 35%;">@(((string[])ViewData["LecturerNames"])[count])</td>
+                                <td style="width: 20%;">@request.DateSubmitted.Value.ToString("yyyy/MM/dd HH:mm:ss")</td>
+                                <td style="width: 10%;">@sApproved</td>
+                                <td style="width: 20%;">@request.RequestStatus</td>
+                            </tr>
+
+                            count++;
+                        }
+
+                    </table>
+                }
+                else
+                {
+                    <br />
+                    <b>No request(s) found</b>
+                    <br />
+                    <br />
+                }
+            </div>
+        </div>
+    </div>
+    <div style="height: 0.5rem"></div>
+    <hr style="width: 800px" />
+
+    <table style="width: 800px">
+        <tr>
+            <td style="width: 55%; vertical-align: top">
+                <div align="left">
+                    <table>
+                        <tr>
+                            <th>Request ID:</th>
+                            <td id="request-id"></td>
+                        </tr>
+                        <tr>
+                            <th>Lecturer ID:</th>
+                            <td id="lecturer-id"></td>
+                        </tr>
+                        <tr>
+                            <th>Lecturer:</th>
+                            <td id="lecturer"></td>
+                        </tr>
+                        <tr>
+                            <th>Date Submitted:</th>
+                            <td id="date-submitted"></td>
+                        </tr>
+                        <tr>
+                            <th>Date Approved:</th>
+                            <td id="date-approved"></td>
+                        </tr>
+                        <tr>
+                            <th>Approved:</th>
+                            <td id="approved"></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td id="status"></td>
+                        </tr>
+                    </table>
+                    <br />
+                    <button class="button-class button-class-small2 button-class-auto-wide" onclick="ViewRequestInfo()">View Request Info</button>
+                </div>
+            </td>
+            <td style="width: 45%; vertical-align: top;">
+                <div>
+                    <b>Supporting Documents</b>
+                    <br />
+
+                    <div style="background-color: white">
+                        <table style="background-color: rgb(220, 220, 220); width: 100%">
+                            <tr>
+                                <th style="width: 50%">Name</th>
+                                <th style="width: 25%">Type</th>
+                                <th style="width: 25%">Size (MB)</th>
+                            </tr>
+                        </table>
+
+                        <div id="supporting-documents" style="overflow-y: scroll; height: 140px">
+
+                            @if (CMCSMain.SelectedRequestIndex == -1)
+                            {
+                                <br />
+                                <p align="center" style="margin: 0px"><b>Nothing found</b></p>
+                                <br />
+                            }
+
+                        </div>
+                    </div>
+
+                    <div align="right">
+                        <button class="button-class button-class-small2" onclick="DownloadDocument()">Download</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+    </table>
+
+
+    <hr style="width: 800px" />
+
+    <div>
+        <br />
+        <b>Action: &nbsp;&nbsp;</b>
+        <button class="button-class button-class-small" onclick="AcceptRequest()">Accept</button>
+        <button class="button-class button-class-small" onclick="RejectRequest()">Reject</button>
+    </div>
+
+</div>
+
