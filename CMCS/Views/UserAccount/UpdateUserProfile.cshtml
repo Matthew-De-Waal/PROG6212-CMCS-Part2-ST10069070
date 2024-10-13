@@ -2,6 +2,60 @@
     ViewData["Title"] = "UpdateUserProfile";
 }
 
+@section Scripts {
+
+    <script type="text/javascript">
+    
+        GET_DATA("/UserAccount/UserAccount", [["ActionName", "GetUserAccountData"]], function(status, response) {
+            if(status == 1)
+            {
+                let userData = JSON.parse(response);
+
+                document.getElementById("txtFirstName").value = userData.FirstName;
+                document.getElementById("txtLastName").value = userData.LastName;
+                document.getElementById("txtIdentityNumber").value = userData.IdentityNumber;
+                document.getElementById("txtEmailAddress").value = userData.EmailAddress;
+
+                let qualificationHtml = "<table style='width: 100%'>";
+                let identityHtml = "<table style='width: 100%'>";
+
+                let qualificationDocuments = userData.QualificationDocuments;
+                let identityDocuments = userData.IdentityDocuments;
+
+                for (let i = 0; i < qualificationDocuments.length; i++) {
+                    qualificationHtml += "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + qualificationDocuments[i].Size + "</td></tr>";
+                }
+
+                for (let i = 0; i < identityDocuments.length; i++) {
+                    identityHtml += "<tr><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + identityDocuments[i].Size + "</td></tr>";
+                }
+
+                qualificationHtml += "</table>";
+                identityHtml += "</table>";
+
+                document.getElementById("qualifications").innerHTML = qualificationHtml;
+                document.getElementById("identity").innerHTML = identityHtml;
+
+                if (userData.RecoveryMethod1Enabled) { 
+                    document.getElementById("chkRecoveryMethod1").checked = true;
+                }
+
+                if (userData.RecoveryMethod2Enabled) {
+                    let accountRecovery = userData.AccountRecovery;
+                    let securityQuestion = accountRecovery.split(',')[0];
+                    let answer = accountRecovery.split(',')[1];
+
+                    document.getElementById("chkRecovertMethod2").checked = true;
+                    document.getElementById("txtQuestion").value = securityQuestion;
+                    document.getElementById("txtAnswer").value = answer;
+                }
+            }
+        });
+
+    </script>
+
+}
+
 <div align="center">
     <div style="width: 650px">
         <br />
@@ -24,28 +78,23 @@
         <table style="width: 650px" cellpadding="4">
 
             <tr>
-                <th>User Account Type: <span class="red-asterisk">*</span></th>
-                <td><input type="radio" id="rdLecturer" checked /> Lecturer &nbsp; <input type="radio" id="rdManager" /> Manager (Admin)</td>
-            </tr>
-
-            <tr>
                 <th>First Name: <span class="red-asterisk">*</span></th>
-                <td><input type="text" style="width: 100%" /></td>
+                <td><input id="txtFirstName" type="text" style="width: 100%" /></td>
             </tr>
 
             <tr>
                 <th>Last Name: <span class="red-asterisk">*</span></th>
-                <td><input type="text" style="width: 100%" /></td>
+                <td><input id="txtLastName" type="text" style="width: 100%" /></td>
             </tr>
 
             <tr>
                 <th>Identity Number (ID): <span class="red-asterisk">*</span></th>
-                <td><input type="text" style="width: 100%" /></td>
+                <td><input id="txtIdentityNumber" type="text" style="width: 100%" /></td>
             </tr>
 
             <tr>
                 <th>Email Address: <span class="red-asterisk">*</span></th>
-                <td><input type="text" style="width: 100%" /></td>
+                <td><input id="txtEmailAddress" type="text" style="width: 100%" /></td>
             </tr>
 
             <tr>
@@ -115,11 +164,11 @@
                     <table cellpadding="3">
                         <tr>
                             <th>Question:</th>
-                            <td><input type="text" style="width: 300px" id="txtSecurityQuestion" /></td>
+                            <td><input id="txtQuestion" type="text" style="width: 300px" id="txtSecurityQuestion" /></td>
                         </tr>
                         <tr>
                             <th>Answer:</th>
-                            <td><input type="text" style="width: 300px" id="txtAnswer" /></td>
+                            <td><input id="txtAnswer" type="text" style="width: 300px" id="txtAnswer" /></td>
                         </tr>
                     </table>
                 </td>
