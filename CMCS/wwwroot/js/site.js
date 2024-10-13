@@ -107,3 +107,17 @@ function GET_DATA2(url, header, e) {
         }
     }
 }
+
+function delete_item(array, index) {
+    let list = [];
+
+    for (let i = 0; i < index; i++) {
+        list[i] = array[i];
+    }
+
+    for (let i = index + 1; i < array.length; i++) {
+        list[i - index] = array[i];
+    }
+
+    return list;
+}

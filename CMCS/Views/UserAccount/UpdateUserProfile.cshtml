@@ -6,6 +6,19 @@
 
     <script type="text/javascript">
     
+        let qualificationDocuments = null;
+        let identityDocuments = null;
+
+        let uploadedQualificationDocuments = [];
+        let uploadedIdentityDocuments = [];
+
+        let selectedQualificationIndex = -1;
+        let selectedIdentityIndex = -1;
+
+        let deleted_qualification_items = [];
+        let deleted_identity_items = [];
+
+
         GET_DATA("/UserAccount/UserAccount", [["ActionName", "GetUserAccountData"]], function(status, response) {
             if(status == 1)
             {
@@ -16,25 +29,10 @@
                 document.getElementById("txtIdentityNumber").value = userData.IdentityNumber;
                 document.getElementById("txtEmailAddress").value = userData.EmailAddress;
 
-                let qualificationHtml = "<table style='width: 100%'>";
-                let identityHtml = "<table style='width: 100%'>";
+                qualificationDocuments = userData.QualificationDocuments;
+                identityDocuments = userData.IdentityDocuments;
 
-                let qualificationDocuments = userData.QualificationDocuments;
-                let identityDocuments = userData.IdentityDocuments;
-
-                for (let i = 0; i < qualificationDocuments.length; i++) {
-                    qualificationHtml += "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + qualificationDocuments[i].Size + "</td></tr>";
-                }
-
-                for (let i = 0; i < identityDocuments.length; i++) {
-                    identityHtml += "<tr><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + identityDocuments[i].Size + "</td></tr>";
-                }
-
-                qualificationHtml += "</table>";
-                identityHtml += "</table>";
-
-                document.getElementById("qualifications").innerHTML = qualificationHtml;
-                document.getElementById("identity").innerHTML = identityHtml;
+                DisplayDocuments();
 
                 if (userData.RecoveryMethod1Enabled) { 
                     document.getElementById("chkRecoveryMethod1").checked = true;
@@ -51,6 +49,240 @@
                 }
             }
         });
+
+        function qualification_selected(index) {
+            if (selectedQualificationIndex != -1) { 
+                document.getElementById("_1_ROW-" + selectedQualificationIndex).style.backgroundColor = EMPTY_STRING;
+            }
+
+            if (selectedQualificationIndex == index)
+                selectedQualificationIndex = -1;
+            else
+            {
+                selectedQualificationIndex = index;
+                document.getElementById("_1_ROW-" + selectedQualificationIndex).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+            }
+        }
+
+        function identity_selected(index) { 
+            if (selectedIdentityIndex != -1) { 
+                document.getElementById("_2_ROW-" + selectedIdentityIndex).style.backgroundColor = EMPTY_STRING;
+            }
+
+            if (selectedIdentityIndex == index)
+                selectedIdentityIndex = -1;
+            else
+            {
+                selectedIdentityIndex = index;
+                document.getElementById("_2_ROW-" + selectedIdentityIndex).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
+            }
+        }
+
+        function DisplayDocuments()
+        {
+            let qualificationHtml = "<table style='width: 100%'>";
+            let identityHtml = "<table style='width: 100%'>";
+
+            for (let i = 0; i < qualificationDocuments.length; i++) {
+                qualificationHtml += "<tr id='_1_ROW-" + i + "' onclick='qualification_selected(" + i + ")'><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + qualificationDocuments[i].Size + "</td></tr>";
+            }
+
+            for(let i = 0; i < uploadedQualificationDocuments.length; i++)
+            {
+                qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].type + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].size + "</td></tr>";
+            }
+
+            for (let i = 0; i < identityDocuments.length; i++) {
+                identityHtml += "<tr id='_2_ROW-" + i + "' onclick='identity_selected(" + i + ")'><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + identityDocuments[i].Size + "</td></tr>";
+            }
+
+            for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
+                identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].type + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].size + "</td></tr>";
+            }
+
+            qualificationHtml += "</table>";
+            identityHtml += "</table>";
+
+            document.getElementById("qualifications").innerHTML = qualificationHtml;
+            document.getElementById("identity").innerHTML = identityHtml;
+        }
+
+        function UploadQualificationDocument() { 
+            let fileDialog = document.createElement("input");
+            fileDialog.type = "file";
+            fileDialog.multiple = true;
+            
+            fileDialog.onchange = function() {
+                let files = fileDialog.files;
+
+                for(let i = 0; i < files.length; i++)
+                {
+                    uploadedQualificationDocuments[uploadedQualificationDocuments.length] = files[i];
+                DisplayDocuments();
+                }
+            };
+
+            fileDialog.click();
+        }
+
+        function DeleteQualificationDocument() { 
+            if(selectedQualificationIndex >= qualificationDocuments.length)
+            {
+                let index = selectedQualificationIndex - qualificationDocuments.length;
+                uploadedQualificationDocuments = delete_item(uploadedQualificationDocuments, index);
+            }
+            else
+            {
+                qualificationDocuments = delete_item(qualificationDocuments, selectedQualificationIndex);
+                deleted_qualification_items[deleted_qualification_items.length + 1] = selectedQualificationIndex;
+            }
+
+            selectedQualificationIndex = -1;
+            DisplayDocuments();
+        }
+
+        function DeleteAllQualificationDocuments() {
+            deleted_qualification_items = "DELETE_ALL";
+            qualificationDocuments = [];
+            uploadedQualificationDocuments = [];
+
+            DisplayDocuments();
+        }
+
+        function UploadIdentityDocument() { 
+            let fileDialog = document.createElement("input");
+            fileDialog.type = "file";
+            fileDialog.multiple = true;
+
+            fileDialog.onchange = function () {
+                let files = fileDialog.files;
+
+                for (let i = 0; i < files.length; i++) {
+                    uploadedIdentityDocuments[uploadedIdentityDocuments.length] = files[i];
+                    DisplayDocuments();
+                }
+            };
+
+            fileDialog.click();
+        }
+
+        function DeleteIdentityDocument() { 
+            if(selectedIdentityIndex >= identityDocuments.length)
+            {
+                let index = selectedIdentityIndex - identityDocuments.length;
+                uploadedIdentityDocuments = delete_item(uploadedIdentityDocuments, index);
+            }
+            else
+            {
+                identityDocuments = delete_item(identityDocuments, selectedIdentityIndex);
+                deleted_identity_items[deleted_identity_items.length] = selectedIdentityIndex;
+            }
+
+            selectedIdentityIndex = -1;
+            DisplayDocuments();
+        }
+
+        function DeleteAllIdentityDocuments() { 
+            deleted_identity_items = "DELETE_ALL";
+            identityDocuments = [];
+            uploadedIdentityDocuments = [];
+
+            DisplayDocuments();
+        }
+
+        function UpdateAccount()
+        {
+            let firstName = document.getElementById("txtFirstName").value;
+            let lastName = document.getElementById("txtLastName").value;
+            let identityNumber = document.getElementById("txtIdentityNumber").value;
+            let emailAddress = document.getElementById("txtEmailAddress").value;
+
+            let validation = firstName.length > 0 &&
+                lastName.length > 0 &&
+                identityNumber.length > 0 &&
+                emailAddress.length > 0;
+
+            let recoveryMethod1Enabled = document.getElementById("chkRecoveryMethod1").checked;
+            let recoveryMethod2Enabled = document.getElementById("chkRecoveryMethod2").checked;
+
+            let question = EMPTY_STRING;
+            let answer = EMPTY_STRING;
+
+            if (recoveryMethod2Enabled) { 
+                question = document.getElementById("txtQuestion").value;
+                answer = document.getElementById("txtAnswer").value;
+
+                validation = validation && question.length > 0 && answer.length > 0;
+            }
+
+            if (validation) { 
+                let userData = new Object();
+
+                userData.FirstName = firstName;
+                userData.LastName = lastName;
+                userData.IdentityNumber = identityNumber;
+                userData.EmailAddress = emailAddress;
+                userData.RecoveryMethod1Enabled = recoveryMethod1Enabled;
+                userData.RecoveryMethod2Enabled = recoveryMethod2Enabled;
+                userData.GenerateNewRecoveryFile = document.getElementById("chkGenerateNew").checked;
+                userData.SecurityQuestion = question;
+                userData.SecurityAnswer = answer;
+                
+                let qualification_documents = [];
+                let identity_documents = [];
+                let documentsRead = 0;
+
+                for(let i = 0; i < uploadedQualificationDocuments.length; i++)
+                {
+                    qualification_documents[i].Name = uploadedQualificationDocuments[i].name;
+                    qualification_documents[i].Size = uploadedQualificationDocuments[i].size;
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(uploadedQualificationDocuments[i]);
+
+                    reader.onloadend = function () {
+                        qualification_documents[i].Content = reader.result;
+                        documentsRead++;
+                    };
+                }
+
+                for (let i = 0; i < uploadedIdentityDocuments.length; i++) { 
+                    identity_documents[i].Name = uploadedIdentityDocuments[i].name;
+                    identity_documents[i].Size = uploadedIdentityDocuments[i].size;
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(uploadedIdentityDocuments[i]);
+
+                    reader.onloadend = function () {
+                        identity_documents[i].Content = reader.result;
+                        documentsRead++;
+                    };
+                }
+
+                userData.QualificationDocuments = qualification_documents;
+                userData.IdentityDocuments = identity_documents;
+                userData.DeletedQualificationDocuments = deleted_qualification_items;
+                userData.DeletedIdentityDocuments = deleted_identity_items;
+
+                let interval = setInterval(function () {
+                    if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) { 
+                        POST_DATA2("/UserAccount/UpdateUserProfile", JSON.stringify(userData), [["ActionName", "UpdateAccount"]], function (status) {
+                            if(status == 1)
+                            {
+                                window.location = "/UserAccount/UserAccount";
+                            }
+                        });
+
+                        clearInterval(interval);
+                    }
+                });
+            }
+        }
+
+        function CancelUpdate()
+        {
+
+        }
 
     </script>
 
@@ -114,9 +346,9 @@
                         <div id="qualifications" style="background-color: white; height: 150px; overflow-x: hidden; overflow-y: auto">
                         </div>
                         <div align="right">
-                            <button class="button-class button-class-small2">Upload</button>
-                            <button class="button-class button-class-small2">Delete</button>
-                            <button class="button-class button-class-small2">Delete All</button>
+                            <button class="button-class button-class-small2" onclick="UploadQualificationDocument()">Upload</button>
+                            <button class="button-class button-class-small2" onclick="DeleteQualificationDocument()">Delete</button>
+                            <button class="button-class button-class-small2" onclick="DeleteAllQualificationDocuments()">Delete All</button>
                         </div>
                     </div>
                 </td>
@@ -139,9 +371,9 @@
                         <div id="identity" style="background-color: white; height: 150px; overflow-x: hidden; overflow-y: auto">
                         </div>
                         <div align="right">
-                            <button class="button-class button-class-small2">Upload</button>
-                            <button class="button-class button-class-small2">Delete</button>
-                            <button class="button-class button-class-small2">Delete All</button>
+                            <button class="button-class button-class-small2" onclick="UploadIdentityDocument()">Upload</button>
+                            <button class="button-class button-class-small2" onclick="DeleteIdentityDocument()">Delete</button>
+                            <button class="button-class button-class-small2" onclick="DeleteAllIdentityDocuments()">Delete All</button>
                         </div>
                     </div>
                     <br />
@@ -153,7 +385,7 @@
             <tr>
                 <th><input type="checkbox" id="chkRecoveryMethod1" style="color: red" />Recovery Method 1: Recovery File:</th>
                 <td>
-                    <button class="button-class button-class-small2 button-class-auto-wide">Generate New</button>
+                    <input id="chkGenerateNew" type="checkbox">Generate New</input>
                     <button class="button-class button-class-small2 button-class-auto-wide">Download</button>
                 </td>
             </tr>
@@ -163,12 +395,12 @@
                 <td>
                     <table cellpadding="3">
                         <tr>
-                            <th>Question:</th>
-                            <td><input id="txtQuestion" type="text" style="width: 300px" id="txtSecurityQuestion" /></td>
+                            <th style="width: 100px">Question: <span class="red-asterisk">*</span></th>
+                            <td><input id="txtQuestion" type="text" style="width: 290px" /></td>
                         </tr>
                         <tr>
-                            <th>Answer:</th>
-                            <td><input id="txtAnswer" type="text" style="width: 300px" id="txtAnswer" /></td>
+                            <th style="width: 100px">Answer: <span class="red-asterisk">*</span></th>
+                            <td><input id="txtAnswer" type="text" style="width: 290px"/></td>
                         </tr>
                     </table>
                 </td>
@@ -206,8 +438,8 @@
         <br />
 
         <div align="right" style="width: 600px">
-            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Update</button>
-            <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+            <button class="button-class button-class-small" onclick="UpdateAccount()">Update</button>
+            <button class="button-class button-class-small" onclick="CancelUpdate()">Cancel</button>
         </div>
     </div>
 </div>

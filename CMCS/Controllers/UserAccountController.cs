@@ -528,8 +528,42 @@ namespace CMCS.Controllers
             return View(document);
         }
 
+        [HttpGet]
+        [HttpPost]
         public IActionResult UpdateUserProfile()
         {
+            if(this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "UpdateAccount")
+            {
+                string? requestBody = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
+                dynamic? userData = JsonConvert.DeserializeObject(requestBody);
+
+                string? firstName = Convert.ToString(userData.FirstName);
+                string? lastName = Convert.ToString(userData.LastName);
+                string? identityNumber = Convert.ToString(userData.IdentityNumber);
+                string? emailAddress = Convert.ToString(userData.EmailAddress);
+                bool recoveryMethod1Enabled = Convert.ToBoolean(userData.RecoveryMethod1Enabled);
+                bool recoveryMethod2Enabled = Convert.ToBoolean(userData.RecoveryMethod2Enabled);
+                bool generateNewRecoveryFile = Convert.ToBoolean(userData.GenerateNewRecoveryFile);
+                string? securityQuestion = Convert.ToString(userData.SecurityQuestion);
+                string? securityAnswer = Convert.ToString(userData.SecurityAnswer);
+
+                dynamic? qualificationDocuments = userData.QualificationDocuments;
+                dynamic? identityDocuments = userData.IdentityDocuments;
+                dynamic? deleted_qualification_documents = userData.DeletedQualificationDocuments;
+                dynamic? deleted_identity_documents = userData.DeletedIdentityDocuments;
+
+                if(!CMCSMain.User.IsManager)
+                {
+                    string sql = $"UPDATE Lecturer SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+                else
+                {
+                    string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+            }
+
             return View();
         }
 
