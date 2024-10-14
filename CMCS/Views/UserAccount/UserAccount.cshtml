@@ -55,10 +55,10 @@
                     let obj = JSON.parse(response2);
                     selectedRequestIndex = obj.RequestIndex;
                     selectedRequestID = obj.RequestID;
-
+                    
                     GET_DATA("/UserAccount/UserAccount", [["ActionName", "GetSupportingDocuments"], ["RequestID", selectedRequestID]], function (status3, response3) {
                         let supportingDocuments = JSON.parse(response3);
-
+                        
                         if (supportingDocuments.length > 0) {
                             let html = "<table style='width: 100%'>";
 
@@ -182,6 +182,27 @@
             });
         }
 
+        function ManageAccount() { 
+            if (bRequestSelected) {
+                window.location = "/UserAccount/UpdateUserProfile";
+            }
+            else { 
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("loading-screen").hidden = false;
+
+                let interval = setInterval(function () {
+                    if (bRequestSelected) {
+                        clearInterval(interval);
+
+                        document.getElementById("main-screen").style.position = "relative";
+                        document.getElementById("loading-screen").hidden = true;
+
+                        window.location = "/UserAccount/UpdateUserProfile";
+                    }
+                }, 1);
+            }
+        }
+
         function toggle_full_table_view()
         {
             let bFullView = document.getElementById("tbl-cell2").hidden;
@@ -205,48 +226,48 @@
 
 @{
 
-        <div align="center">
-            <div style="height: 1rem"></div>
-            <div>
-                <button class="button-class button-class-wide" onclick="window.location = '/Request/NewRequest?ActionName=NewRequest'"><img src="~/images/new-icon.png" height="24" />New Request</button>
-                <button class="button-class button-class-wide" onclick="EditRequest()"><img src="~/images/edit-icon.png" height="24" />Edit Request</button>
-                <button class="button-class button-class-wide" onclick="TrackRequest()"><img src="~/images/track-icon.png" height="24" />Track Request</button>
-                <button class="button-class button-class-wide" onclick="window.location.reload()"><img src="~/images/refresh-icon.png" height="24" />Refresh Request(s)</button>
-                <button class="button-class button-class-wide" onclick="CancelRequest()"><img src="~/images/cancel-icon.png" height="24" />Cancel Request(s)</button>
-                <button class="button-class button-class-wide" onclick="ExportLog()"><img src="~/images/export-icon.png" height="24" />Export Log</button>
-                <button class="button-class button-class-wide" onclick="window.location = '/UserAccount/UpdateUserProfile'"><img src="~/images/account-icon.png" height="24" />Manage Account</button>
-            </div>
-            <br />
+                    <div align="center">
+                        <div style="height: 1rem"></div>
+                        <div>
+                            <button class="button-class button-class-wide" onclick="window.location = '/Request/NewRequest?ActionName=NewRequest'"><img src="~/images/new-icon.png" height="24" />New Request</button>
+                            <button class="button-class button-class-wide" onclick="EditRequest()"><img src="~/images/edit-icon.png" height="24" />Edit Request</button>
+                            <button class="button-class button-class-wide" onclick="TrackRequest()"><img src="~/images/track-icon.png" height="24" />Track Request</button>
+                            <button class="button-class button-class-wide" onclick="window.location.reload()"><img src="~/images/refresh-icon.png" height="24" />Refresh Request(s)</button>
+                            <button class="button-class button-class-wide" onclick="CancelRequest()"><img src="~/images/cancel-icon.png" height="24" />Cancel Request(s)</button>
+                            <button class="button-class button-class-wide" onclick="ExportLog()"><img src="~/images/export-icon.png" height="24" />Export Log</button>
+                            <button class="button-class button-class-wide" onclick="ManageAccount()"><img src="~/images/account-icon.png" height="24" />Manage Account</button>
+                        </div>
+                        <br />
 
-            <div style="background-color: white">
-                <table style="width: 100%; height: 100vh">
-                    <tr>
-                        <td id="tbl-cell1" align="center" style="width: 65%; vertical-align: top">
-                            <div style="background-color: white">
-                                <div style="background-color: #304c80">
-                                    <br />
-                                    <table cellpadding="16" class="request-display" style="width: 100%">
-                                        <tr>
-                                            <th class="table-cell-class" style="width: 10%">Request ID</th>
-                                            <th class="table-cell-class" style="width: 20%">Request Name</th>
-                                            <th class="table-cell-class" style="width: 30%">Description</th>
-                                            <th class="table-cell-class" style="width: 10%">Request Approved</th>
-                                            <th class="table-cell-class" style="width: 10%">Status</th>
-                                            <th class="table-cell-class" style="width: 10%">Date Submitted</th>
-                                            <th class="table-cell-class" style="width: 10%">Date Approved</th>
-                                        </tr>
+                        <div style="background-color: white">
+                            <table style="width: 100%; height: 100vh">
+                                <tr>
+                                    <td id="tbl-cell1" align="center" style="width: 65%; vertical-align: top">
+                                        <div style="background-color: white">
+                                            <div style="background-color: #304c80">
+                                                <br />
+                                                <table cellpadding="16" class="request-display" style="width: 100%">
+                                                    <tr>
+                                                        <th class="table-cell-class" style="width: 10%">Request ID</th>
+                                                        <th class="table-cell-class" style="width: 20%">Request Name</th>
+                                                        <th class="table-cell-class" style="width: 30%">Description</th>
+                                                        <th class="table-cell-class" style="width: 10%">Request Approved</th>
+                                                        <th class="table-cell-class" style="width: 10%">Status</th>
+                                                        <th class="table-cell-class" style="width: 10%">Date Submitted</th>
+                                                        <th class="table-cell-class" style="width: 10%">Date Approved</th>
+                                                    </tr>
 
-                                        <!-- This is where the claims will be displayed -->
-                                    </table>
-                                    <br />
-                                </div>
+                                                    <!-- This is where the claims will be displayed -->
+                                                </table>
+                                                <br />
+                                            </div>
 
-                                @{
+                                            @{
                                 if (this.Model.Count > 0)
                                 {
-                                            <table style="width: 100%">
+                                                                    <table style="width: 100%">
 
-                                                @{
+                                                                        @{
                                             int count = 0;
 
                                             foreach (CMCSRequest request in this.Model)
@@ -264,54 +285,54 @@
                                                 if (request.RequestStatus == "Pending")
                                                     requestApproved = "No";
 
-                                                            <tr id="ROW-@count" style="height: 64px; color: black" onclick="request_selected(@count)">
-                                                                <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestID</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 20%">@request.RequestFor</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 30%">@request.Description</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 10%">@requestApproved</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestStatus</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateSubmitted</td>
-                                                                <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateApproved</td>
-                                                            </tr>
+                                                                                                <tr id="ROW-@count" style="height: 64px; color: black" onclick="request_selected(@count)">
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestID</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 20%">@request.RequestFor</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 30%">@request.Description</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@requestApproved</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestStatus</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateSubmitted</td>
+                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateApproved</td>
+                                                                                                </tr>
 
                                                 count++;
                                             }
-                                                }
+                                                                        }
 
-                                            </table>
+                                                                    </table>
 
                                 }
                                 else
                                 {
-                                            <b>No request(s) found</b>
-                                            <br />
-                                            <br />
+                                                                    <b>No request(s) found</b>
+                                                                    <br />
+                                                                    <br />
                                 }
-                                }
-                            </div>
-                        </td>
-                        <td onclick="toggle_full_table_view()" style="width: 1%; height: 100%; background-color: #304c80"></td>
-                        <td id="tbl-cell2" align="center" style="vertical-align: top; width: 34%">
-                            <div style="background-color: white">
-                                <div align="left"><b>Supporting Document(s)</b></div>
-                                <table cellpadding="16" class="request-display" style="width: 100%">
-                                    <tr style="background-color: #304c80">
-                                        <th class="table-cell-class" style="width: 46%">Document Name</th>
-                                        <th class="table-cell-class" style="width: 18%">Size</th>
-                                        <th class="table-cell-class" style="width: 18%">Type</th>
-                                        <th class="table-cell-class" style="width: 18%">Action</th>
-                                    </tr>
-                                </table>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td onclick="toggle_full_table_view()" style="width: 1%; height: 100%; background-color: #304c80"></td>
+                                    <td id="tbl-cell2" align="center" style="vertical-align: top; width: 34%">
+                                        <div style="background-color: white">
+                                            <div align="left"><b>Supporting Document(s)</b></div>
+                                            <table cellpadding="16" class="request-display" style="width: 100%">
+                                                <tr style="background-color: #304c80">
+                                                    <th class="table-cell-class" style="width: 46%">Document Name</th>
+                                                    <th class="table-cell-class" style="width: 18%">Size</th>
+                                                    <th class="table-cell-class" style="width: 18%">Type</th>
+                                                    <th class="table-cell-class" style="width: 18%">Action</th>
+                                                </tr>
+                                            </table>
 
-                                <div id="tblDocuments">
-                                    <br />
-                                    <b>No document(s) found</b>
-                                </div>
+                                            <div id="tblDocuments">
+                                                <br />
+                                                <b>No document(s) found</b>
+                                            </div>
 
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
 }

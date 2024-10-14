@@ -260,6 +260,7 @@ namespace CMCS.Controllers
         {
             dynamic? requestData = new { RequestIndex = CMCSMain.SelectedRequestIndex, RequestID = CMCSMain.SelectedRequestID };
 
+            this.Response.StatusCode = 1;
             this.Response.WriteAsync(JsonConvert.SerializeObject((object)requestData));
             this.Response.CompleteAsync();
         }
@@ -311,6 +312,7 @@ namespace CMCS.Controllers
             string documentContent = reader["Content"].ToString();
             reader.Close();
 
+            this.Response.StatusCode = 1;
             this.Response.WriteAsync($"[{filename}]{documentContent}");
             this.Response.CompleteAsync();
         }
@@ -419,32 +421,28 @@ namespace CMCS.Controllers
             this.Response.CompleteAsync();
         }
 
+        private void UserAccount_GetRecoveryFile()
+        {
+            string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+            if(reader.Read())
+            {
+                string? value = reader["Value"].ToString();
+
+                this.Response.StatusCode = 1;
+                this.Response.WriteAsync($"UserID={CMCSMain.User.IdentityNumber};RecoveryKey={value}");
+                this.Response.CompleteAsync();
+            }
+
+            reader.Close();
+        }
+
         [HttpGet]
         [HttpPost]
         public IActionResult UserAccount()
         {
             CMCSDB.OpenConnection();
-
-            if (this.Request.Method == "POST")
-            {
-                if (this.Request.Headers["ActionName"] == "SetRequestIndex")
-                    UserAccount_SetRequestIndex();
-            }
-
-            if (this.Request.Method == "GET")
-            {
-                if (this.Request.Headers["ActionName"] == "GetSupportingDocuments")
-                    UserAccount_GetSupportingDocuments();
-
-                if (this.Request.Headers["ActionName"] == "GetDocumentContent")
-                    UserAccount_GetDocumentContent();
-
-                if (this.Request.Headers["ActionName"] == "GetRequestIndex")
-                    UserAccount_GetRequestIndex();
-
-                if (this.Request.Headers["ActionName"] == "GetUserAccountData")
-                    UserAccount_GetUserAccountData();
-            }
 
             int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
             string sql = $"SELECT * FROM Request WHERE LecturerID = {lecturerID}";
@@ -492,6 +490,24 @@ namespace CMCS.Controllers
                 reader2.Close();
             }
 
+            if (this.Request.Method == "POST")
+            {
+                if (this.Request.Headers["ActionName"] == "SetRequestIndex")
+                    UserAccount_SetRequestIndex();
+            }
+
+            if (this.Request.Method == "GET")
+            {
+                if (this.Request.Headers["ActionName"] == "GetSupportingDocuments")
+                    UserAccount_GetSupportingDocuments();
+
+                if (this.Request.Headers["ActionName"] == "GetDocumentContent")
+                    UserAccount_GetDocumentContent();
+
+                if (this.Request.Headers["ActionName"] == "GetRequestIndex")
+                    UserAccount_GetRequestIndex();
+            }
+
             CMCSDB.CloseConnection();
 
             return View(requestList);
@@ -532,7 +548,18 @@ namespace CMCS.Controllers
         [HttpPost]
         public IActionResult UpdateUserProfile()
         {
-            if(this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "UpdateAccount")
+            CMCSDB.OpenConnection();
+
+            if (this.Request.Method == "GET")
+            {
+                if (this.Request.Headers["ActionName"] == "GetUserAccountData")
+                    UserAccount_GetUserAccountData();
+
+                if (this.Request.Headers["ActionName"] == "GetRecoveryFile")
+                    UserAccount_GetRecoveryFile();
+            }
+
+            if (this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "UpdateAccount")
             {
                 string? requestBody = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
                 dynamic? userData = JsonConvert.DeserializeObject(requestBody);
@@ -562,7 +589,106 @@ namespace CMCS.Controllers
                     string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
                     CMCSDB.RunSQLNoResult(sql);
                 }
+
+                if(recoveryMethod1Enabled)
+                {
+                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'FILE'";
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    if(!reader.Read())
+                    {
+                        reader.Close();
+
+                        string key = CMCSMain.GenerateKey(30);
+                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('FILE', '{key}', '{CMCSMain.User.IdentityNumber}')";
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                    else
+                    {
+                        reader.Close();
+
+                        if(generateNewRecoveryFile)
+                        {
+                            string key = CMCSMain.GenerateKey(30);
+                            string sql2 = $"UPDATE AccountRecovery SET Value = '{key}' WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                            CMCSDB.RunSQLNoResult(sql2);
+                        }
+                    }
+                }
+                else
+                {
+                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                if(recoveryMethod2Enabled)
+                {
+                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'QUESTION'";
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    if (!reader.Read())
+                    {
+                        reader.Close();
+
+                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('QUESTION', '{securityQuestion};{securityAnswer}', '{CMCSMain.User.IdentityNumber}')";
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                    else
+                    {
+                        reader.Close();
+
+                        string sql2 = $"UPDATE AccountRecovery SET Value = '{securityQuestion};{securityAnswer}' WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                }
+                else
+                {
+                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Insert the uploaded qualification documents.
+                for(int i = 0; i < qualificationDocuments.Count; i++)
+                {
+                    string documentName = Convert.ToString(qualificationDocuments[i].Name);
+                    long documentSize = Convert.ToInt64(qualificationDocuments[i].Size);
+                    string documentContent = Convert.ToString(qualificationDocuments[i].Content);
+
+                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'QUALIFICATION', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Insert the uploaded identity documents.
+                for (int i = 0; i < qualificationDocuments.Count; i++)
+                {
+                    string documentName = Convert.ToString(identityDocuments[i].Name);
+                    long documentSize = Convert.ToInt64(identityDocuments[i].Size);
+                    string documentContent = Convert.ToString(identityDocuments[i].Content);
+
+                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'IDENTITY', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Delete the selected qualification documents.
+                for(int i = 0; i < deleted_qualification_documents.Count; i++)
+                {
+                    int documentId = Convert.ToInt32(deleted_qualification_documents[i]);
+                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Delete the selected identity documents.
+                for (int i = 0; i < deleted_qualification_documents.Count; i++)
+                {
+                    int documentId = Convert.ToInt32(deleted_identity_documents[i]);
+                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                this.Response.StatusCode = 1;
             }
+
+            CMCSDB.CloseConnection();
 
             return View();
         }

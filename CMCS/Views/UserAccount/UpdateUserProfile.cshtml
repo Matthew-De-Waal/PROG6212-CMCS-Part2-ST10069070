@@ -19,7 +19,7 @@
         let deleted_identity_items = [];
 
 
-        GET_DATA("/UserAccount/UserAccount", [["ActionName", "GetUserAccountData"]], function(status, response) {
+        GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetUserAccountData"]], function(status, response) {
             if(status == 1)
             {
                 let userData = JSON.parse(response);
@@ -36,14 +36,15 @@
 
                 if (userData.RecoveryMethod1Enabled) { 
                     document.getElementById("chkRecoveryMethod1").checked = true;
+                    document.getElementById("btnDownload").disabled = false;
                 }
 
                 if (userData.RecoveryMethod2Enabled) {
                     let accountRecovery = userData.AccountRecovery;
-                    let securityQuestion = accountRecovery.split(',')[0];
-                    let answer = accountRecovery.split(',')[1];
+                    let securityQuestion = accountRecovery.split(';')[0];
+                    let answer = accountRecovery.split(';')[1];
 
-                    document.getElementById("chkRecovertMethod2").checked = true;
+                    document.getElementById("chkRecoveryMethod2").checked = true;
                     document.getElementById("txtQuestion").value = securityQuestion;
                     document.getElementById("txtAnswer").value = answer;
                 }
@@ -118,7 +119,7 @@
                 for(let i = 0; i < files.length; i++)
                 {
                     uploadedQualificationDocuments[uploadedQualificationDocuments.length] = files[i];
-                DisplayDocuments();
+                    DisplayDocuments();
                 }
             };
 
@@ -134,7 +135,7 @@
             else
             {
                 qualificationDocuments = delete_item(qualificationDocuments, selectedQualificationIndex);
-                deleted_qualification_items[deleted_qualification_items.length + 1] = selectedQualificationIndex;
+                deleted_qualification_items[deleted_qualification_items.length] = qualificationDocuments[selectedQualificationIndex].DocumentID;
             }
 
             selectedQualificationIndex = -1;
@@ -175,7 +176,7 @@
             else
             {
                 identityDocuments = delete_item(identityDocuments, selectedIdentityIndex);
-                deleted_identity_items[deleted_identity_items.length] = selectedIdentityIndex;
+                deleted_identity_items[deleted_identity_items.length] = identityDocuments[selectedIdentityIndex].DocumentID;
             }
 
             selectedIdentityIndex = -1;
@@ -215,7 +216,7 @@
                 validation = validation && question.length > 0 && answer.length > 0;
             }
 
-            if (validation) { 
+            if (validation) {
                 let userData = new Object();
 
                 userData.FirstName = firstName;
@@ -227,13 +228,12 @@
                 userData.GenerateNewRecoveryFile = document.getElementById("chkGenerateNew").checked;
                 userData.SecurityQuestion = question;
                 userData.SecurityAnswer = answer;
-                
+
                 let qualification_documents = [];
                 let identity_documents = [];
                 let documentsRead = 0;
 
-                for(let i = 0; i < uploadedQualificationDocuments.length; i++)
-                {
+                for (let i = 0; i < uploadedQualificationDocuments.length; i++) {
                     qualification_documents[i].Name = uploadedQualificationDocuments[i].name;
                     qualification_documents[i].Size = uploadedQualificationDocuments[i].size;
 
@@ -246,7 +246,7 @@
                     };
                 }
 
-                for (let i = 0; i < uploadedIdentityDocuments.length; i++) { 
+                for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
                     identity_documents[i].Name = uploadedIdentityDocuments[i].name;
                     identity_documents[i].Size = uploadedIdentityDocuments[i].size;
 
@@ -265,10 +265,9 @@
                 userData.DeletedIdentityDocuments = deleted_identity_items;
 
                 let interval = setInterval(function () {
-                    if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) { 
+                    if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) {
                         POST_DATA2("/UserAccount/UpdateUserProfile", JSON.stringify(userData), [["ActionName", "UpdateAccount"]], function (status) {
-                            if(status == 1)
-                            {
+                            if (status == 1) {
                                 window.location = "/UserAccount/UserAccount";
                             }
                         });
@@ -277,11 +276,26 @@
                     }
                 });
             }
+            else { 
+                window.location = "/Home/Status?ActionName=UpdateUserProfile&Status=Failed";
+            }
         }
 
         function CancelUpdate()
         {
+            window.location = "/UserAccount/UserAccount";
+        }
 
+        function DownloadRecoveryFile() { 
+            GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetRecoveryFile"]], function (status, response) {
+                if(status == 1)
+                {
+                    let element = document.createElement("a");
+                    element.href = "data:text/plain;base64," + btoa(response);
+                    element.download = "RECOVERY-FILE.dat";
+                    element.click();
+                }
+            });
         }
 
     </script>
@@ -385,8 +399,8 @@
             <tr>
                 <th><input type="checkbox" id="chkRecoveryMethod1" style="color: red" />Recovery Method 1: Recovery File:</th>
                 <td>
-                    <input id="chkGenerateNew" type="checkbox">Generate New</input>
-                    <button class="button-class button-class-small2 button-class-auto-wide">Download</button>
+                    <input id="chkGenerateNew" type="checkbox" />Generate New
+                    <button id="btnDownload" class="button-class button-class-small2 button-class-auto-wide" onclick="DownloadRecoveryFile()" disabled>Download</button>
                 </td>
             </tr>
 

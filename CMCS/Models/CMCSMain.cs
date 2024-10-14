@@ -44,5 +44,18 @@ namespace CMCS.Models
 
             return result;
         }
+
+        public static string GenerateKey(int length)
+        {
+            const string SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            string output = string.Empty;
+
+            for(int i = 0; i < length; i++)
+            {
+                output += SYMBOLS[Random.Shared.Next(0, SYMBOLS.Length - 1)];
+            }
+
+            return output;
+        }
     }
 }
