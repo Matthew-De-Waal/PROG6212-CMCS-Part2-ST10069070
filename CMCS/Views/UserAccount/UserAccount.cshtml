@@ -182,25 +182,8 @@
             });
         }
 
-        function ManageAccount() { 
-            if (bRequestSelected) {
-                window.location = "/UserAccount/UpdateUserProfile";
-            }
-            else { 
-                document.getElementById("main-screen").style.position = "absolute";
-                document.getElementById("loading-screen").hidden = false;
-
-                let interval = setInterval(function () {
-                    if (bRequestSelected) {
-                        clearInterval(interval);
-
-                        document.getElementById("main-screen").style.position = "relative";
-                        document.getElementById("loading-screen").hidden = true;
-
-                        window.location = "/UserAccount/UpdateUserProfile";
-                    }
-                }, 1);
-            }
+        function ManageAccount() {
+            window.location = "/UserAccount/UpdateUserProfile";
         }
 
         function toggle_full_table_view()

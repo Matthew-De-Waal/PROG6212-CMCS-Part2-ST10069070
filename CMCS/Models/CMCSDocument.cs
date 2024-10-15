@@ -2,6 +2,7 @@
 {
     public class CMCSDocument
     {
+        // Automatic Properties
         public int DocumentID { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }

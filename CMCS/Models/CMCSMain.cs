@@ -3,12 +3,21 @@ using System.Data.SqlClient;
 
 namespace CMCS.Models
 {
+    /// <summary>
+    /// Static Class: CMCSMain
+    /// </summary>
     public static class CMCSMain
     {
+        // Automatic Properties
         public static CMCSUser User { get; set; } = new CMCSUser();
         public static int SelectedRequestIndex { get; set; } = -1;
         public static int SelectedRequestID { get; set; }
 
+        /// <summary>
+        /// This method gets the document type from a given filename.
+        /// </summary>
+        /// <param name="documentName"></param>
+        /// <returns></returns>
         public static string GetDocumentType(string documentName)
         {
             string type = string.Empty;
@@ -28,6 +37,11 @@ namespace CMCS.Models
             return type;
         }
 
+        /// <summary>
+        /// This method checks if the user already exists in the database.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public static bool UserExists(string userId)
         {
             bool result = false;
@@ -45,6 +59,11 @@ namespace CMCS.Models
             return result;
         }
 
+        /// <summary>
+        /// Generates a random key.
+        /// </summary>
+        /// <param name="length">The length of the key.</param>
+        /// <returns></returns>
         public static string GenerateKey(int length)
         {
             const string SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

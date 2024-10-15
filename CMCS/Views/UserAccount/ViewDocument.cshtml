@@ -2,7 +2,7 @@
 
 
 @{
-    ViewData["Title"] = "ViewDocument";
+    ViewData["Title"] = "View Document";
 }
 
 <div align="center">
@@ -13,6 +13,7 @@
 
     @switch(Model.Type)
     {
+        // The document type is PDF.
         case "PDF":
             <button class="button-class button-class-wide2" onclick="window.location = '/UserAccount/UserAccount'">Return To Your Account</button>
             <br />
@@ -20,6 +21,7 @@
             <iframe class="document-viewer-class" src="data:application/pdf;base64,@Model.Content"></iframe>
             break;
 
+        // The document type is Excel Spreadsheet.
         case "XLSX":
             <button class="button-class button-class-wide2" onclick="window.location = '/UserAccount/UserAccount'">Return To Your Account</button>
             <br />
@@ -27,6 +29,7 @@
             <object class="document-viewer-class" type="application/msexcel" data="data:application/msexcel;base64,@Model.Content"></object>
             break;
 
+        // The document type is a PNG image.
         case "PNG":
             <button class="button-class button-class-wide2" onclick="window.location = '/UserAccount/UserAccount'">Return To Your Account</button>
             <br />
@@ -34,6 +37,7 @@
             <img class="document-viewer-class document-viewer-class2" src="data:image/png;base64,@Model.Content" />
             break;
 
+        // The document type is a JPG image.
         case "JPG":
             <button class="button-class button-class-wide2" onclick="window.location = '/UserAccount/UserAccount'">Return To Your Account</button>
             <br />
@@ -41,6 +45,7 @@
             <img class="document-viewer-class document-viewer-class2" src="data:image/jpeg;base64,@Model.Content" />
             break;
 
+        // Display an error message for any other type of file.
         default:
             <div align="center" style="width: 500px; background-color: white; border-color: rgb(35, 35, 35); border-style: solid; border-width: 2px">
                 <div style="height: 1rem"></div>

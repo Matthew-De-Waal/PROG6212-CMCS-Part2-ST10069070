@@ -15,8 +15,7 @@
     <script type="text/javascript">
 
         let documents = [];
-        let documentCount = 0;
-        let documentCount2 = parseInt(document.getElementById("DocumentCount").value, 10);
+        let documentCount = parseInt(document.getElementById("DocumentCount").value, 10);
         let selectedIndex = -1;
         let selectedIndex2 = -1;
 
@@ -54,7 +53,7 @@
         }
 
         function DisplayDocuments() {
-            if (documentCount > 0) {
+            if (documents.length > 0) {
                 let html = "<table style='width: 100%'>";
 
                 for (let i = 0; i < documents.length; i++) {
@@ -70,7 +69,7 @@
                 document.getElementById("documentList2").innerHTML = html;
             }
             else {
-                if(documentCount2 == 0)
+                if(documentCount == 0)
                     document.getElementById("documentList2").innerHTML = "<br /><b>No files uploaded</b><br /><br />";
             }
         }
@@ -78,14 +77,14 @@
         function UploadDocument() {
             let fileDialog = document.createElement("input");
             fileDialog.type = "file";
+            fileDialog.multiple = true;
             fileDialog.click();
 
             fileDialog.onchange = function () {
                 for (let i = 0; i < fileDialog.files.length; i++) {
-                    documents[documentCount + i] = fileDialog.files[i];
+                    documents[documents.length] = fileDialog.files[i];
                 }
 
-                documentCount += fileDialog.files.length;
                 DisplayDocuments();
             }
         }
@@ -123,8 +122,6 @@
 
         function DeleteAllDocuments() { 
             documents = [];
-            documentCount = 0;
-
             deletedDocuments = "DELETE_ALL";
 
             selectedIndex = -1;

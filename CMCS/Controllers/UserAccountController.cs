@@ -15,46 +15,65 @@ namespace CMCS.Controllers
 {
     public class UserAccountController : Controller
     {
+        /// <summary>
+        /// CMCS UserLogin page
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [HttpPost]
         public IActionResult UserLogin()
         {
+            // POST method.
             if (this.Request.Method == "POST")
             {
+                // Open the database connection.
                 CMCSDB.OpenConnection();
 
+                // Read from the request body, asynchronously.
                 var sUserCredentials = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
                 dynamic? userCredentials = JsonConvert.DeserializeObject(sUserCredentials);
 
+                // Get the fields from the dynamic object.
                 string? userId = Convert.ToString(userCredentials?.UserId);
                 string? userPassword = Convert.ToString(userCredentials?.Password);
 
+                // Check if the user account exists.
                 if (CMCSMain.UserExists(userId))
                 {
+                    // Variable declaration.
                     string? password = string.Empty;
 
+                    // Run the sql query and obtain the SqlDataReader object.
                     var sqlResult = CMCSDB.RunSQLResult($"SELECT * FROM Lecturer WHERE IdentityNumber = '{userId}'");
 
+                    // Check if the SqlDataReader object has no rows.
                     if (!sqlResult.HasRows)
                     {
+                        // Close the SqlDataReader object.
                         sqlResult.Close();
                         sqlResult = CMCSDB.RunSQLResult($"SELECT * FROM Manager WHERE IdentityNumber = '{userId}'");
+                        // Read data from the SqlDataReader object.
                         sqlResult.Read();
 
+                        // Check if the SqlDataReader 'sqlResult' has rows.
                         if (sqlResult.HasRows)
                         {
+                            // Obtain the password from the SqlDataReader object.
                             password = Convert.ToString(sqlResult["Password"]);
                             CMCSMain.User.IsManager = true;
                         }
                     }
                     else
                     {
+                        // Read data from the SqlDataReader object.
                         sqlResult.Read();
                         password = Convert.ToString(sqlResult["Password"]);
                     }
 
+                    // Check if the two passwords matches.
                     if (userPassword == password)
                     {
+                        // Assign the user's information to the global properties.
                         CMCSMain.User.FirstName = Convert.ToString(sqlResult["FirstName"]);
                         CMCSMain.User.LastName = Convert.ToString(sqlResult["LastName"]);
                         CMCSMain.User.IdentityNumber = Convert.ToString(sqlResult["IdentityNumber"]);
@@ -78,6 +97,7 @@ namespace CMCS.Controllers
                         this.Response.StatusCode = 2;
                     }
 
+                    // Close the SqlDataReader object.
                     sqlResult.Close();
                 }
                 else
@@ -85,16 +105,23 @@ namespace CMCS.Controllers
                     // The request failed.
                     this.Response.StatusCode = 2;
                 }
+
+                // Close the database connection.
                 CMCSDB.CloseConnection();
             }
 
             return View();
         }
 
+        /// <summary>
+        /// CMCS UserRegistration page
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [HttpPost]
         public IActionResult UserRegistration()
         {
+            // POST method
             if (this.Request.Method == "POST")
             {
                 // Obtain the user data as a JSON string.
@@ -120,12 +147,15 @@ namespace CMCS.Controllers
                 // Iterate through the 'qualificationDocuments' array.
                 for (int i = 0; i < qualificationDocuments?.Count; i++)
                 {
+                    // Dynamic object: document
                     dynamic? document = qualificationDocuments[i];
 
+                    // Obtain the fields from the dynamic object.
                     string documentName = Convert.ToString(document.Name);
                     int documentSize = Convert.ToInt32(document.Size);
                     string documentContent = Convert.ToString(document.Content);
 
+                    // Add a new CMCSDocument to the collection.
                     QualificationDocuments.Add(new CMCSDocument
                     {
                         Name = documentName,
@@ -139,12 +169,15 @@ namespace CMCS.Controllers
                 // Iterate through the 'identityDocuments' array.
                 for (int i = 0; i < identityDocuments?.Count; i++)
                 {
+                    // Dynamic object: document.
                     dynamic? document = identityDocuments[i];
 
+                    // Obtain the fields from the dynamic object.
                     string documentName = Convert.ToString(document.Name);
                     int documentSize = Convert.ToInt32(document.Size);
                     string documentContent = Convert.ToString(document.Content);
 
+                    // Add a new CMCDocument to the collection.
                     IdentityDocuments.Add(new CMCSDocument
                     {
                         Name = documentName,
@@ -154,6 +187,7 @@ namespace CMCS.Controllers
                     });
                 }
 
+                // Open the database connection.
                 CMCSDB.OpenConnection();
 
                 // Check if the user does not exist.
@@ -170,59 +204,20 @@ namespace CMCS.Controllers
                     this.Response.StatusCode = 2;
                 }
 
+                // Close the database connection.
                 CMCSDB.CloseConnection();
             }
 
             return View();
         }
 
-        private void RegisterUser(bool bLecturer, string firstName, string lastName, string identityNumber, string emailAddress, string password, CMCSDocument[] qualificationDocuments, CMCSDocument[] identityDocuments)
-        {
-            if (bLecturer)
-            {
-                CMCSDB.RunSQLNoResult($"INSERT INTO Lecturer(FirstName, LastName, IdentityNumber, EmailAddress, Password) VALUES ('{firstName}', '{lastName}', '{identityNumber}', '{emailAddress}', '{password}')");
-
-                for (int i = 0; i < qualificationDocuments.Length; i++)
-                {
-                    var document = qualificationDocuments[i];
-                    string documentType = CMCSMain.GetDocumentType(document.Name);
-
-                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'QUALIFICATION', '{identityNumber}', '{document.Content}')");
-                }
-
-                for (int i = 0; i < identityDocuments.Length; i++)
-                {
-                    var document = identityDocuments[i];
-                    string documentType = CMCSMain.GetDocumentType(document.Name);
-
-                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'IDENTITY', '{identityNumber}', '{document.Content}')");
-                }
-            }
-            else
-            {
-                CMCSDB.RunSQLNoResult($"INSERT INTO Manager(FirstName, LastName, IdentityNumber, EmailAddress, Password) VALUES ('{firstName}', '{lastName}', '{identityNumber}', '{emailAddress}', '{password}')");
-
-                for (int i = 0; i < qualificationDocuments.Length; i++)
-                {
-                    var document = identityDocuments[i];
-                    string documentType = CMCSMain.GetDocumentType(document.Name);
-
-                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'QUALIFICATION', '{identityNumber}', '{document.Content}')");
-                }
-
-                for (int i = 0; i < identityDocuments.Length; i++)
-                {
-                    var document = identityDocuments[i];
-                    string documentType = CMCSMain.GetDocumentType(document.Name);
-
-                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'IDENTITY', '{identityNumber}', '{document.Content}')");
-                }
-            }
-        }
-
-        [HttpGet]
+        /// <summary>
+        /// CMCS UserLogout page
+        /// </summary>
+        /// <returns></returns>
         public IActionResult UserLogout()
         {
+            // Reset the global properties.
             CMCSMain.User.FirstName = string.Empty;
             CMCSMain.User.LastName = string.Empty;
             CMCSMain.User.IdentityNumber = string.Empty;
@@ -236,48 +231,468 @@ namespace CMCS.Controllers
             return RedirectToAction("UserLogin", "UserAccount");
         }
 
+        /// <summary>
+        /// CMCS UserAccount page
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [HttpPost]
+        public IActionResult UserAccount()
+        {
+            // Open the database connection.
+            CMCSDB.OpenConnection();
 
+            int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+            string sql = $"SELECT * FROM Request WHERE LecturerID = {lecturerID}";
+            int rowCount = CMCSDB.CountRows(sql);
+            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+            List<CMCSRequest> requestList = new List<CMCSRequest>();
+
+            // Check if the reader has rows.
+            if (reader.HasRows)
+            {
+                // Iterate through the collection.
+                for (int i = 0; i < rowCount; i++)
+                {
+                    // Read data from the reader.
+                    reader.Read();
+
+                    // Create a CMCSRequest object.
+                    CMCSRequest request = new CMCSRequest();
+                    request.RequestID = Convert.ToInt32(reader["RequestID"]);
+                    request.LecturerID = Convert.ToInt32(reader["LecturerID"]);
+                    request.RequestFor = Convert.ToString(reader["RequestFor"]);
+                    request.HoursWorked = Convert.ToInt32(reader["HoursWorked"]);
+                    request.HourlyRate = Convert.ToInt32(reader["HourlyRate"]);
+                    request.Description = Convert.ToString(reader["Description"]);
+                    request.RequestStatus = Convert.ToString(reader["RequestStatus"]);
+                    request.DateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString());
+
+                    // Add the object to the requestList.
+                    requestList.Add(request);
+                }
+            }
+
+            // Close the SqlDataReader object.
+            reader.Close();
+
+            // Iterate through the 'requestList' collection.
+            for (int i = 0; i < requestList.Count; i++)
+            {
+                string sql2 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestList[i].RequestID}";
+                SqlDataReader reader2 = CMCSDB.RunSQLResult(sql2);
+
+                // Check if the reader has rows.
+                if (reader2.HasRows)
+                {
+                    reader2.Read();
+                    requestList[i].DateApproved = DateTime.Parse(reader2["Date"].ToString());
+                }
+                else
+                {
+                    requestList[i].DateApproved = null;
+                }
+
+                // Close the SqlDataReader object.
+                reader2.Close();
+            }
+
+            // POST method
+            if (this.Request.Method == "POST")
+            {
+                if (this.Request.Headers["ActionName"] == "SetRequestIndex")
+                    UserAccount_SetRequestIndex();
+            }
+
+            // GET method
+            if (this.Request.Method == "GET")
+            {
+                if (this.Request.Headers["ActionName"] == "GetSupportingDocuments")
+                    UserAccount_GetSupportingDocuments();
+
+                if (this.Request.Headers["ActionName"] == "GetDocumentContent")
+                    UserAccount_GetDocumentContent();
+
+                if (this.Request.Headers["ActionName"] == "GetRequestIndex")
+                    UserAccount_GetRequestIndex();
+            }
+
+            // Close the database connection.
+            CMCSDB.CloseConnection();
+
+            return View(requestList);
+        }
+
+        /// <summary>
+        /// CMCS ViewDocument page
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [HttpPost]
+        public IActionResult ViewDocument()
+        {
+            // Open the database connection.
+            CMCSDB.OpenConnection();
+
+            // Get the fields from the request headers.
+            int requestID = Convert.ToInt32(this.Request.Query["RequestID"]);
+            int documentIndex = Convert.ToInt32(this.Request.Query["DocumentIndex"]);
+
+            string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
+            // Declare and instantiate a SqlDataReader object.
+            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+            // Skip through the collection.
+            for (int i = 0; i < documentIndex; i++)
+                reader.Read();
+
+            // Read data from the SqlDataReader object.
+            reader.Read();
+
+            // Declare and instantiate a CMCSDocument object.
+            CMCSDocument document = new CMCSDocument();
+            document.DocumentID = Convert.ToInt32(reader["DocumentID"].ToString());
+            document.Name = reader["Name"].ToString();
+            document.Size = Convert.ToInt32(reader["Size"].ToString());
+            document.Type = reader["Type"].ToString();
+            document.Section = reader["Section"].ToString();
+            document.Content = reader["Content"].ToString();
+
+            // Close the SqlDataReader object.
+            reader.Close();
+            // Close the database connection.
+            CMCSDB.CloseConnection();
+
+            return View(document);
+        }
+
+        /// <summary>
+        /// CMCS UpdateUserProfile page
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [HttpPost]
+        public IActionResult UpdateUserProfile()
+        {
+            // Open the database connection.
+            CMCSDB.OpenConnection();
+
+            // GET method
+            if (this.Request.Method == "GET")
+            {
+                if (this.Request.Headers["ActionName"] == "GetUserAccountData")
+                    UserAccount_GetUserAccountData();
+
+                if (this.Request.Headers["ActionName"] == "GetRecoveryFile")
+                    UserAccount_GetRecoveryFile();
+            }
+
+            // POST method: UpdateAccount
+            if (this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "UpdateAccount")
+            {
+                // Read from the request body, asynchronously.
+                string? requestBody = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
+                // Create an object from the request body, using JsonConvert.
+                dynamic? userData = JsonConvert.DeserializeObject(requestBody);
+
+                // Variable Declarations
+                string? firstName = Convert.ToString(userData.FirstName);
+                string? lastName = Convert.ToString(userData.LastName);
+                string? identityNumber = Convert.ToString(userData.IdentityNumber);
+                string? emailAddress = Convert.ToString(userData.EmailAddress);
+                bool recoveryMethod1Enabled = Convert.ToBoolean(userData.RecoveryMethod1Enabled);
+                bool recoveryMethod2Enabled = Convert.ToBoolean(userData.RecoveryMethod2Enabled);
+                bool generateNewRecoveryFile = Convert.ToBoolean(userData.GenerateNewRecoveryFile);
+                string? securityQuestion = Convert.ToString(userData.SecurityQuestion);
+                string? securityAnswer = Convert.ToString(userData.SecurityAnswer);
+
+                // Dynamic objects.
+                dynamic? qualificationDocuments = userData.QualificationDocuments;
+                dynamic? identityDocuments = userData.IdentityDocuments;
+                dynamic? deleted_qualification_documents = userData.DeletedQualificationDocuments;
+                dynamic? deleted_identity_documents = userData.DeletedIdentityDocuments;
+
+                // Check if the user is not a Manager.
+                if (!CMCSMain.User.IsManager)
+                {
+                    string sql = $"UPDATE Lecturer SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+                else
+                {
+                    string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Check if 'Recovery Method 1' is enabled.
+                if (recoveryMethod1Enabled)
+                {
+                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'FILE'";
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    // Check if the reader cannot read data.
+                    if (!reader.Read())
+                    {
+                        // Close the SqlDataReader object.
+                        reader.Close();
+
+                        // Generate a random key of 30 characters.
+                        string key = CMCSMain.GenerateKey(30);
+                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('FILE', '{key}', '{CMCSMain.User.IdentityNumber}')";
+                        // Run a SQL query.
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                    else
+                    {
+                        // Close the reader.
+                        reader.Close();
+
+                        // Check if a new recovery file must be generated.
+                        if (generateNewRecoveryFile)
+                        {
+                            // Generate a random key of 30 characters.
+                            string key = CMCSMain.GenerateKey(30);
+                            string sql2 = $"UPDATE AccountRecovery SET Value = '{key}' WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                            // Run a SQL query.
+                            CMCSDB.RunSQLNoResult(sql2);
+                        }
+                    }
+                }
+                else
+                {
+                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Check if 'Recovery Method 2' is enabled.
+                if (recoveryMethod2Enabled)
+                {
+                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'QUESTION'";
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    // Check if the reader cannot read data.
+                    if (!reader.Read())
+                    {
+                        // Close the reader.
+                        reader.Close();
+
+                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('QUESTION', '{securityQuestion};{securityAnswer}', '{CMCSMain.User.IdentityNumber}')";
+                        // Run a SQL query.
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                    else
+                    {
+                        // Close the reader.
+                        reader.Close();
+
+                        string sql2 = $"UPDATE AccountRecovery SET Value = '{securityQuestion};{securityAnswer}' WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                        // Run a SQL query.
+                        CMCSDB.RunSQLNoResult(sql2);
+                    }
+                }
+                else
+                {
+                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Insert the uploaded qualification documents.
+                for (int i = 0; i < qualificationDocuments.Count; i++)
+                {
+                    string documentName = Convert.ToString(qualificationDocuments[i].Name);
+                    long documentSize = Convert.ToInt64(qualificationDocuments[i].Size);
+                    string documentContent = Convert.ToString(qualificationDocuments[i].Content);
+
+                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'QUALIFICATION', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Insert the uploaded identity documents.
+                for (int i = 0; i < qualificationDocuments.Count; i++)
+                {
+                    string documentName = Convert.ToString(identityDocuments[i].Name);
+                    long documentSize = Convert.ToInt64(identityDocuments[i].Size);
+                    string documentContent = Convert.ToString(identityDocuments[i].Content);
+
+                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'IDENTITY', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Delete the selected qualification documents.
+                for (int i = 0; i < deleted_qualification_documents.Count; i++)
+                {
+                    int documentId = Convert.ToInt32(deleted_qualification_documents[i]);
+                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // Delete the selected identity documents.
+                for (int i = 0; i < deleted_qualification_documents.Count; i++)
+                {
+                    int documentId = Convert.ToInt32(deleted_identity_documents[i]);
+                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult(sql);
+                }
+
+                // The request succeeded.
+                this.Response.StatusCode = 1;
+            }
+
+            // Close the database connection.
+            CMCSDB.CloseConnection();
+
+            return View();
+        }
+
+        /// <summary>
+        /// CMCS UserForgotPassword page
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [HttpPost]
+        public IActionResult UserForgotPassword()
+        {
+            // POST method: ResetPassword
+            if (this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "ResetPassword")
+            {
+                // Read data from the request body, asynchronously.
+                string? requestBody = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
+                dynamic? userData = JsonConvert.DeserializeObject(requestBody);
+
+                string? userId = Convert.ToString(userData.UserID);
+                int recoveryMethod = Convert.ToInt32(userData.RecoveryMethod);
+                string newPassword = Convert.ToString(userData.NewPassword);
+                string newPasswordConfirmed = Convert.ToString(userData.NewPasswordConfirmed);
+                bool success = false;
+
+                // Open the database connection.
+                CMCSDB.OpenConnection();
+
+                // Recovery Method 1: Recover from a recovery file.
+                if (recoveryMethod == 1)
+                {
+                    // Variable Declarations
+                    string recoveryFileContent = Convert.ToString(userData.RecoveryFileContent);
+
+                    string sUserID = recoveryFileContent.Split(";")[0];
+                    string sUserID2 = sUserID.Substring(sUserID.LastIndexOf("=") + 1);
+
+                    string sRecoveryKey = recoveryFileContent.Split(";")[1];
+                    string sRecoveryKey2 = sRecoveryKey.Substring(sRecoveryKey.LastIndexOf("=") + 1);
+
+                    string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'FILE' AND Value = '{sRecoveryKey2}' AND UserID = '{sUserID2}'";
+                    // Declare and instantiate a SqlDataReader object.
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    success = reader.Read() && userId == sUserID2;
+                    // Close the reader.
+                    reader.Close();
+                }
+
+                // Recovery Method 2: Recover with a Security Question.
+                if (recoveryMethod == 2)
+                {
+                    string securityAnswer = Convert.ToString(userData.SecurityAnswer);
+
+                    string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'QUESTION' AND Value = '{securityAnswer}' AND UserID = '{userId}'";
+                    // Declare and instantiate a SqlDataReader object.
+                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                    success = reader.Read();
+                    // Close the reader.
+                    reader.Close();
+                }
+
+                if (success)
+                {
+                    // Obtain the lecturer id.
+                    int lecturerId = CMCSDB.FindLecturer(userId);
+                    string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = '{lecturerId}'";
+
+                    // The request succeeded.
+                    this.Response.StatusCode = 1;
+                }
+                else
+                {
+                    // The request failed.
+                    this.Response.StatusCode = 2;
+                }
+
+                // Close the database connection.
+                CMCSDB.CloseConnection();
+            }
+
+            return View();
+        }
+
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_SetRequestIndex()
         {
+            // Set the request index
             CMCSMain.SelectedRequestIndex = Convert.ToInt32(this.Request.Headers["RowSelected"]);
 
+            // Get the lecturer id.
             int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
             var reader = CMCSDB.RunSQLResult($"SELECT * FROM Request WHERE LecturerID = {lecturerId}");
 
+            // Iterate through the collection.
             for (int i = 0; i < CMCSMain.SelectedRequestIndex; i++)
                 reader.Read();
 
+            // Read data from the SqlDataReader object.
             reader.Read();
             CMCSMain.SelectedRequestID = Convert.ToInt32(reader["RequestID"].ToString());
 
+            // Close the SqlDataReader object.
             reader.Close();
 
             // The request succeeded.
             this.Response.StatusCode = 1;
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetRequestIndex()
         {
             dynamic? requestData = new { RequestIndex = CMCSMain.SelectedRequestIndex, RequestID = CMCSMain.SelectedRequestID };
 
+            // The request succeeded.
             this.Response.StatusCode = 1;
             this.Response.WriteAsync(JsonConvert.SerializeObject((object)requestData));
             this.Response.CompleteAsync();
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetSupportingDocuments()
         {
+            // Get the request id from the request header 'RequestID'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
             string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
             int row_count = CMCSDB.CountRows(sql);
             SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
+            // Create a generic collection instance.
             List<CMCSDocument> documentList = new List<CMCSDocument>();
 
+            // Iterate through the collection.
             for (int i = 0; i < row_count; i++)
             {
                 reader.Read();
 
+                // Create a CMCSDocument instance.
                 var document = new CMCSDocument();
                 document.DocumentID = Convert.ToInt32(reader["DocumentID"]);
                 document.Name = reader["Name"].ToString();
@@ -286,48 +701,66 @@ namespace CMCS.Controllers
                 document.Section = reader["Section"].ToString();
                 document.Content = reader["Content"].ToString();
 
+                // Add the object to the 'documentList' collection.
                 documentList.Add(document);
             }
 
+            // Close the SqlDataReader object.
             reader.Close();
 
+            // The request succeeded.
             this.Response.StatusCode = 1;
             this.Response.WriteAsync(JsonConvert.SerializeObject(documentList.ToArray()));
             this.Response.CompleteAsync();
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetDocumentContent()
         {
+            // Obtain the fields from the request headers 'RequestID' and 'FileIndex'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
             int fileIndex = Convert.ToInt32(this.Request.Headers["FileIndex"]);
 
             string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
+            // Declare and instantiate a SqlDataReader object.
             SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
+            // Iterate through the collection.
             for (int i = 0; i < fileIndex; i++)
                 reader.Read();
 
+            // Read data from the SqlDataReader object.
             reader.Read();
             string filename = reader["Name"].ToString();
             string documentContent = reader["Content"].ToString();
+            // Close the SqlDataReader object.
             reader.Close();
 
+            // The request succeeded.
             this.Response.StatusCode = 1;
             this.Response.WriteAsync($"[{filename}]{documentContent}");
             this.Response.CompleteAsync();
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetUserAccountData()
         {
+            // Obtain the lecturer id
             int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
             string sql = $"SELECT * FROM Lecturer WHERE LecturerID = {lecturerId}";
             SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
+            // Variable declarations
             string? firstName = string.Empty;
             string? lastName = string.Empty;
             string? identityNumber = string.Empty;
             string? emailAddress = string.Empty;
 
+            // Check if the reader can read data.
             if (reader.Read())
             {
                 firstName = reader["FirstName"].ToString();
@@ -336,14 +769,17 @@ namespace CMCS.Controllers
                 emailAddress = reader["EmailAddress"].ToString();
             }
 
+            // Close the SqlDataReader object.
             reader.Close();
 
             string sql2 = $"SELECT * FROM Document WHERE UserID = '{CMCSMain.User.IdentityNumber}'";
             reader = CMCSDB.RunSQLResult(sql2);
 
+            // Generic collections.
             List<CMCSDocument> qualificationDocuments = new();
             List<CMCSDocument> identityDocuments = new();
 
+            // Iterate through the collection.
             while (reader.Read())
             {
                 int documentId = Convert.ToInt32(reader["DocumentID"].ToString());
@@ -353,6 +789,7 @@ namespace CMCS.Controllers
                 string documentSection = reader["Section"].ToString();
                 string documentContent = reader["Content"].ToString();
 
+                // Declare a new object of type 'CMCSDocument'.
                 CMCSDocument document = new()
                 {
                     DocumentID = documentId,
@@ -363,36 +800,45 @@ namespace CMCS.Controllers
                     Content = documentContent
                 };
 
+                // Check if the documentSection is 'QUALIFICATION'
                 if (documentSection == "QUALIFICATION")
                 {
+                    // Add the document to the 'qualificationDocuments' collection.
                     qualificationDocuments.Add(document);
                 }
 
+                // Check if the documentSection is 'IDENTITY'
                 if (documentSection == "IDENTITY")
                 {
+                    // Add the document to the 'identityDocuments' collection.
                     identityDocuments.Add(document);
                 }
             }
 
+            // Close the SqlDataReader object.
             reader.Close();
 
             string sql3 = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}'";
             reader = CMCSDB.RunSQLResult(sql3);
 
+            // Variable declarations
             string? securityQuestion = string.Empty;
             bool method1Enabled = false;
             bool method2Enabled = false;
 
+            // Iterate through the collection
             while(reader.Read())
             {
                 string? method = reader["Method"].ToString();
                 string? value = reader["Value"].ToString();
 
+                // Check if the method is 'FILE'.
                 if(method == "FILE")
                 {
                     method1Enabled = true;
                 }
 
+                // Check if the method is 'QUESTION'.
                 if(method == "QUESTION")
                 {
                     securityQuestion = value;
@@ -400,8 +846,10 @@ namespace CMCS.Controllers
                 }
             }
 
+            // Close the SqlDataReader object.
             reader.Close();
 
+            // Instantiate a new dynamic object.
             dynamic? userAccountData = new
             {
                 FirstName = firstName,
@@ -415,287 +863,100 @@ namespace CMCS.Controllers
                 RecoveryMethod2Enabled = method2Enabled
             };
 
-
+            // The request succeeded.
             this.Response.StatusCode = 1;
             this.Response.WriteAsync(JsonConvert.SerializeObject((object)userAccountData));
             this.Response.CompleteAsync();
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetRecoveryFile()
         {
             string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
             SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
+            // Check if the reader can read data.
             if(reader.Read())
             {
                 string? value = reader["Value"].ToString();
 
+                // The request succeeded.
                 this.Response.StatusCode = 1;
                 this.Response.WriteAsync($"UserID={CMCSMain.User.IdentityNumber};RecoveryKey={value}");
                 this.Response.CompleteAsync();
             }
 
+            // Close the SqlDataReader object.
             reader.Close();
         }
 
-        [HttpGet]
-        [HttpPost]
-        public IActionResult UserAccount()
+        /// <summary>
+        /// This method registers a new user with CMCS.
+        /// </summary>
+        /// <param name="bLecturer">Indicates if the new user is a Lecturer or Manager.</param>
+        /// <param name="firstName">The user's first name.</param>
+        /// <param name="lastName">The user's last name.</param>
+        /// <param name="identityNumber">The user's identity number.</param>
+        /// <param name="emailAddress">The user's email address.</param>
+        /// <param name="password">The user's password.</param>
+        /// <param name="qualificationDocuments">The user's qualification documents.</param>
+        /// <param name="identityDocuments">The user's identity documents.</param>
+        private void RegisterUser(bool bLecturer, string firstName, string lastName, string identityNumber, string emailAddress, string password, CMCSDocument[] qualificationDocuments, CMCSDocument[] identityDocuments)
         {
-            CMCSDB.OpenConnection();
-
-            int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
-            string sql = $"SELECT * FROM Request WHERE LecturerID = {lecturerID}";
-            int rowCount = CMCSDB.CountRows(sql);
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-            List<CMCSRequest> requestList = new List<CMCSRequest>();
-
-            if (reader.HasRows)
+            // Check if the user type is a Lecturer.
+            if (bLecturer)
             {
-                for (int i = 0; i < rowCount; i++)
+                // Run a SQL query.
+                CMCSDB.RunSQLNoResult($"INSERT INTO Lecturer(FirstName, LastName, IdentityNumber, EmailAddress, Password) VALUES ('{firstName}', '{lastName}', '{identityNumber}', '{emailAddress}', '{password}')");
+
+                // Iterate through the 'qualificationDocuments' array.
+                for (int i = 0; i < qualificationDocuments.Length; i++)
                 {
-                    reader.Read();
+                    var document = qualificationDocuments[i];
+                    string documentType = CMCSMain.GetDocumentType(document.Name);
 
-                    CMCSRequest request = new CMCSRequest();
-                    request.RequestID = Convert.ToInt32(reader["RequestID"]);
-                    request.LecturerID = Convert.ToInt32(reader["LecturerID"]);
-                    request.RequestFor = Convert.ToString(reader["RequestFor"]);
-                    request.HoursWorked = Convert.ToInt32(reader["HoursWorked"]);
-                    request.HourlyRate = Convert.ToInt32(reader["HourlyRate"]);
-                    request.Description = Convert.ToString(reader["Description"]);
-                    request.RequestStatus = Convert.ToString(reader["RequestStatus"]);
-                    request.DateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString());
-
-                    requestList.Add(request);
-                }
-            }
-
-            reader.Close();
-
-            for (int i = 0; i < requestList.Count; i++)
-            {
-                string sql2 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestList[i].RequestID}";
-                SqlDataReader reader2 = CMCSDB.RunSQLResult(sql2);
-
-                if (reader2.HasRows)
-                {
-                    reader2.Read();
-                    requestList[i].DateApproved = DateTime.Parse(reader2["Date"].ToString());
-                }
-                else
-                {
-                    requestList[i].DateApproved = null;
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'QUALIFICATION', '{identityNumber}', '{document.Content}')");
                 }
 
-                reader2.Close();
-            }
+                // Iterate through the 'identityDocuments' array.
+                for (int i = 0; i < identityDocuments.Length; i++)
+                {
+                    var document = identityDocuments[i];
+                    string documentType = CMCSMain.GetDocumentType(document.Name);
 
-            if (this.Request.Method == "POST")
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'IDENTITY', '{identityNumber}', '{document.Content}')");
+                }
+            }
+            else
             {
-                if (this.Request.Headers["ActionName"] == "SetRequestIndex")
-                    UserAccount_SetRequestIndex();
+                // Run a SQL query.
+                CMCSDB.RunSQLNoResult($"INSERT INTO Manager(FirstName, LastName, IdentityNumber, EmailAddress, Password) VALUES ('{firstName}', '{lastName}', '{identityNumber}', '{emailAddress}', '{password}')");
+
+                // Iterate through the 'qualifiationDocuments' array.
+                for (int i = 0; i < qualificationDocuments.Length; i++)
+                {
+                    var document = identityDocuments[i];
+                    string documentType = CMCSMain.GetDocumentType(document.Name);
+
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'QUALIFICATION', '{identityNumber}', '{document.Content}')");
+                }
+
+                // Iterate through the 'identityDocuments' array.
+                for (int i = 0; i < identityDocuments.Length; i++)
+                {
+                    var document = identityDocuments[i];
+                    string documentType = CMCSMain.GetDocumentType(document.Name);
+
+                    // Run a SQL query.
+                    CMCSDB.RunSQLNoResult($"INSERT INTO Document (Name, Type, Size, Section, UserID, Content) VALUES ('{document.Name}', '{documentType}', {document.Size}, 'IDENTITY', '{identityNumber}', '{document.Content}')");
+                }
             }
-
-            if (this.Request.Method == "GET")
-            {
-                if (this.Request.Headers["ActionName"] == "GetSupportingDocuments")
-                    UserAccount_GetSupportingDocuments();
-
-                if (this.Request.Headers["ActionName"] == "GetDocumentContent")
-                    UserAccount_GetDocumentContent();
-
-                if (this.Request.Headers["ActionName"] == "GetRequestIndex")
-                    UserAccount_GetRequestIndex();
-            }
-
-            CMCSDB.CloseConnection();
-
-            return View(requestList);
         }
 
-        [HttpGet]
-        [HttpPost]
-        public IActionResult ViewDocument()
-        {
-            CMCSDB.OpenConnection();
-
-            int requestID = Convert.ToInt32(this.Request.Query["RequestID"]);
-            int documentIndex = Convert.ToInt32(this.Request.Query["DocumentIndex"]);
-
-            string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-
-            for (int i = 0; i < documentIndex; i++)
-                reader.Read();
-
-            reader.Read();
-
-            CMCSDocument document = new CMCSDocument();
-            document.DocumentID = Convert.ToInt32(reader["DocumentID"].ToString());
-            document.Name = reader["Name"].ToString();
-            document.Size = Convert.ToInt32(reader["Size"].ToString());
-            document.Type = reader["Type"].ToString();
-            document.Section = reader["Section"].ToString();
-            document.Content = reader["Content"].ToString();
-
-            reader.Close();
-            CMCSDB.CloseConnection();
-
-            return View(document);
-        }
-
-        [HttpGet]
-        [HttpPost]
-        public IActionResult UpdateUserProfile()
-        {
-            CMCSDB.OpenConnection();
-
-            if (this.Request.Method == "GET")
-            {
-                if (this.Request.Headers["ActionName"] == "GetUserAccountData")
-                    UserAccount_GetUserAccountData();
-
-                if (this.Request.Headers["ActionName"] == "GetRecoveryFile")
-                    UserAccount_GetRecoveryFile();
-            }
-
-            if (this.Request.Method == "POST" && this.Request.Headers["ActionName"] == "UpdateAccount")
-            {
-                string? requestBody = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
-                dynamic? userData = JsonConvert.DeserializeObject(requestBody);
-
-                string? firstName = Convert.ToString(userData.FirstName);
-                string? lastName = Convert.ToString(userData.LastName);
-                string? identityNumber = Convert.ToString(userData.IdentityNumber);
-                string? emailAddress = Convert.ToString(userData.EmailAddress);
-                bool recoveryMethod1Enabled = Convert.ToBoolean(userData.RecoveryMethod1Enabled);
-                bool recoveryMethod2Enabled = Convert.ToBoolean(userData.RecoveryMethod2Enabled);
-                bool generateNewRecoveryFile = Convert.ToBoolean(userData.GenerateNewRecoveryFile);
-                string? securityQuestion = Convert.ToString(userData.SecurityQuestion);
-                string? securityAnswer = Convert.ToString(userData.SecurityAnswer);
-
-                dynamic? qualificationDocuments = userData.QualificationDocuments;
-                dynamic? identityDocuments = userData.IdentityDocuments;
-                dynamic? deleted_qualification_documents = userData.DeletedQualificationDocuments;
-                dynamic? deleted_identity_documents = userData.DeletedIdentityDocuments;
-
-                if(!CMCSMain.User.IsManager)
-                {
-                    string sql = $"UPDATE Lecturer SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-                else
-                {
-                    string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                if(recoveryMethod1Enabled)
-                {
-                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'FILE'";
-                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-
-                    if(!reader.Read())
-                    {
-                        reader.Close();
-
-                        string key = CMCSMain.GenerateKey(30);
-                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('FILE', '{key}', '{CMCSMain.User.IdentityNumber}')";
-                        CMCSDB.RunSQLNoResult(sql2);
-                    }
-                    else
-                    {
-                        reader.Close();
-
-                        if(generateNewRecoveryFile)
-                        {
-                            string key = CMCSMain.GenerateKey(30);
-                            string sql2 = $"UPDATE AccountRecovery SET Value = '{key}' WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                            CMCSDB.RunSQLNoResult(sql2);
-                        }
-                    }
-                }
-                else
-                {
-                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                if(recoveryMethod2Enabled)
-                {
-                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'QUESTION'";
-                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-
-                    if (!reader.Read())
-                    {
-                        reader.Close();
-
-                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('QUESTION', '{securityQuestion};{securityAnswer}', '{CMCSMain.User.IdentityNumber}')";
-                        CMCSDB.RunSQLNoResult(sql2);
-                    }
-                    else
-                    {
-                        reader.Close();
-
-                        string sql2 = $"UPDATE AccountRecovery SET Value = '{securityQuestion};{securityAnswer}' WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                        CMCSDB.RunSQLNoResult(sql2);
-                    }
-                }
-                else
-                {
-                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                // Insert the uploaded qualification documents.
-                for(int i = 0; i < qualificationDocuments.Count; i++)
-                {
-                    string documentName = Convert.ToString(qualificationDocuments[i].Name);
-                    long documentSize = Convert.ToInt64(qualificationDocuments[i].Size);
-                    string documentContent = Convert.ToString(qualificationDocuments[i].Content);
-
-                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'QUALIFICATION', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                // Insert the uploaded identity documents.
-                for (int i = 0; i < qualificationDocuments.Count; i++)
-                {
-                    string documentName = Convert.ToString(identityDocuments[i].Name);
-                    long documentSize = Convert.ToInt64(identityDocuments[i].Size);
-                    string documentContent = Convert.ToString(identityDocuments[i].Content);
-
-                    string sql = $"INSERT INTO Document(Name, Size, Type, Section, Content, UserID) VALUES ('{documentName}', {documentSize}, '{CMCSMain.GetDocumentType(documentName)}', 'IDENTITY', '{documentContent}', '{CMCSMain.User.IdentityNumber}')";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                // Delete the selected qualification documents.
-                for(int i = 0; i < deleted_qualification_documents.Count; i++)
-                {
-                    int documentId = Convert.ToInt32(deleted_qualification_documents[i]);
-                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                // Delete the selected identity documents.
-                for (int i = 0; i < deleted_qualification_documents.Count; i++)
-                {
-                    int documentId = Convert.ToInt32(deleted_identity_documents[i]);
-                    string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
-                    CMCSDB.RunSQLNoResult(sql);
-                }
-
-                this.Response.StatusCode = 1;
-            }
-
-            CMCSDB.CloseConnection();
-
-            return View();
-        }
-
-        public IActionResult UserForgotPassword()
-        {
-            return View();
-        }
     }
 }

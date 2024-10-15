@@ -2,6 +2,7 @@
 {
     public class CMCSRequest
     {
+        // Automatic Properties
         public int RequestID { get; set; }
         public int LecturerID { get; set; }
         public string? RequestFor { get; set; }
