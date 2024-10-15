@@ -241,60 +241,63 @@ namespace CMCS.Controllers
         {
             // Open the database connection.
             CMCSDB.OpenConnection();
-
-            int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
-            string sql = $"SELECT * FROM Request WHERE LecturerID = {lecturerID}";
-            int rowCount = CMCSDB.CountRows(sql);
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
             List<CMCSRequest> requestList = new List<CMCSRequest>();
 
-            // Check if the reader has rows.
-            if (reader.HasRows)
+            if (!this.Request.Headers.ContainsKey("ActionName"))
             {
-                // Iterate through the collection.
-                for (int i = 0; i < rowCount; i++)
-                {
-                    // Read data from the reader.
-                    reader.Read();
-
-                    // Create a CMCSRequest object.
-                    CMCSRequest request = new CMCSRequest();
-                    request.RequestID = Convert.ToInt32(reader["RequestID"]);
-                    request.LecturerID = Convert.ToInt32(reader["LecturerID"]);
-                    request.RequestFor = Convert.ToString(reader["RequestFor"]);
-                    request.HoursWorked = Convert.ToInt32(reader["HoursWorked"]);
-                    request.HourlyRate = Convert.ToInt32(reader["HourlyRate"]);
-                    request.Description = Convert.ToString(reader["Description"]);
-                    request.RequestStatus = Convert.ToString(reader["RequestStatus"]);
-                    request.DateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString());
-
-                    // Add the object to the requestList.
-                    requestList.Add(request);
-                }
-            }
-
-            // Close the SqlDataReader object.
-            reader.Close();
-
-            // Iterate through the 'requestList' collection.
-            for (int i = 0; i < requestList.Count; i++)
-            {
-                string sql2 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestList[i].RequestID}";
-                SqlDataReader reader2 = CMCSDB.RunSQLResult(sql2);
+                int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+                string sql = $"SELECT * FROM Request WHERE LecturerID = {lecturerID}";
+                int rowCount = CMCSDB.CountRows(sql);
+                SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
                 // Check if the reader has rows.
-                if (reader2.HasRows)
+                if (reader.HasRows)
                 {
-                    reader2.Read();
-                    requestList[i].DateApproved = DateTime.Parse(reader2["Date"].ToString());
-                }
-                else
-                {
-                    requestList[i].DateApproved = null;
+                    // Iterate through the collection.
+                    for (int i = 0; i < rowCount; i++)
+                    {
+                        // Read data from the reader.
+                        reader.Read();
+
+                        // Create a CMCSRequest object.
+                        CMCSRequest request = new CMCSRequest();
+                        request.RequestID = Convert.ToInt32(reader["RequestID"]);
+                        request.LecturerID = Convert.ToInt32(reader["LecturerID"]);
+                        request.RequestFor = Convert.ToString(reader["RequestFor"]);
+                        request.HoursWorked = Convert.ToInt32(reader["HoursWorked"]);
+                        request.HourlyRate = Convert.ToInt32(reader["HourlyRate"]);
+                        request.Description = Convert.ToString(reader["Description"]);
+                        request.RequestStatus = Convert.ToString(reader["RequestStatus"]);
+                        request.DateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString());
+
+                        // Add the object to the requestList.
+                        requestList.Add(request);
+                    }
                 }
 
                 // Close the SqlDataReader object.
-                reader2.Close();
+                reader.Close();
+
+                // Iterate through the 'requestList' collection.
+                for (int i = 0; i < requestList.Count; i++)
+                {
+                    string sql2 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestList[i].RequestID}";
+                    SqlDataReader reader2 = CMCSDB.RunSQLResult(sql2);
+
+                    // Check if the reader has rows.
+                    if (reader2.HasRows)
+                    {
+                        reader2.Read();
+                        requestList[i].DateApproved = DateTime.Parse(reader2["Date"].ToString());
+                    }
+                    else
+                    {
+                        requestList[i].DateApproved = null;
+                    }
+
+                    // Close the SqlDataReader object.
+                    reader2.Close();
+                }
             }
 
             // POST method
@@ -315,6 +318,9 @@ namespace CMCS.Controllers
 
                 if (this.Request.Headers["ActionName"] == "GetRequestIndex")
                     UserAccount_GetRequestIndex();
+
+                if (this.Request.Headers["ActionName"] == "GetSecurityQuestion")
+                    UserAccount_GetSecurityQuestion();
             }
 
             // Close the database connection.
@@ -602,7 +608,7 @@ namespace CMCS.Controllers
                 {
                     string securityAnswer = Convert.ToString(userData.SecurityAnswer);
 
-                    string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'QUESTION' AND Value = '{securityAnswer}' AND UserID = '{userId}'";
+                    string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'QUESTION' AND Value LIKE '%;{securityAnswer}' AND UserID = '{userId}'";
                     // Declare and instantiate a SqlDataReader object.
                     SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
@@ -616,6 +622,7 @@ namespace CMCS.Controllers
                     // Obtain the lecturer id.
                     int lecturerId = CMCSDB.FindLecturer(userId);
                     string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = '{lecturerId}'";
+                    CMCSDB.RunSQLNoResult(sql);
 
                     // The request succeeded.
                     this.Response.StatusCode = 1;
@@ -885,6 +892,33 @@ namespace CMCS.Controllers
                 // The request succeeded.
                 this.Response.StatusCode = 1;
                 this.Response.WriteAsync($"UserID={CMCSMain.User.IdentityNumber};RecoveryKey={value}");
+                this.Response.CompleteAsync();
+            }
+
+            // Close the SqlDataReader object.
+            reader.Close();
+        }
+
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
+        private void UserAccount_GetSecurityQuestion()
+        {
+            // Get the user id from the request header 'UserID'.
+            string? userId = this.Request.Headers["UserID"];
+            string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{userId}'";
+            // Create a SqlDataReader object.
+            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+            // Check if the reader can read data.
+            if(reader.Read())
+            {
+                string? value = reader["Value"].ToString();
+                string securityQuestion = value.Split(';')[0];
+
+                // The request succeeded.
+                this.Response.StatusCode = 1;
+                this.Response.WriteAsync(securityQuestion);
                 this.Response.CompleteAsync();
             }
 
