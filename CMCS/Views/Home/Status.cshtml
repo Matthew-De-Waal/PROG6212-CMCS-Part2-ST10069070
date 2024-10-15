@@ -5,7 +5,9 @@
 <div align="center">
 
     @{
+        // Display message
 
+        // RegisterUser: Success
         if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Success")
         {
             <div style="height: 2rem"></div>
@@ -25,6 +27,7 @@
             </div>
         }
 
+        // RegisterUser: Failed
         if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -55,6 +58,7 @@
             </div>
         }
 
+        // UserLogin: Failed
         if (this.Context.Request.Query["ActionName"] == "UserLogin" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -87,6 +91,7 @@
             </div>
         }
 
+        // NewRequest: Failed
         if (this.Context.Request.Query["ActionName"] == "NewRequest" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -116,6 +121,7 @@
             </div>
         }
 
+        // UpdateRequest: Failed
         if (this.Context.Request.Query["ActionName"] == "UpdateRequest" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -145,6 +151,7 @@
             </div>
         }
 
+        // EditRequest: Failed
         if (this.Context.Request.Query["ActionName"] == "EditRequest" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -166,6 +173,7 @@
             </div>
         }
 
+        // CancelRequest: Failed
         if (this.Context.Request.Query["ActionName"] == "CancelRequest" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -208,6 +216,7 @@
             </div>
         }
 
+        // UpdateUserProfile: Failed
         if(this.Context.Request.Query["ActionName"] == "UpdateUserProfile" && this.Context.Request.Query["Status"] == "Failed")
         {
             <div style="height: 2rem"></div>
@@ -233,35 +242,43 @@
     <br />
 
     @{
+        // 'Try Again' button
+
+        // RegisterUser: Success
         if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Success")
         {
             string? userId = this.Context.Request.Query["UserId"];
             <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserLogin?UserId=@userId'">Login Now</button>
         }
 
+        // RegisterUser: Failed
         if (this.Context.Request.Query["ActionName"] == "RegisterUser" && this.Context.Request.Query["Status"] == "Failed")
         {
             <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserRegistration'">Try Again</button>
         }
 
+        // UserLogin: Failed
         if (this.Context.Request.Query["ActionName"] == "UserLogin" && this.Context.Request.Query["Status"] == "Failed")
         {
             <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserLogin'">Try Again</button>
         }
 
+        // NewRequest, UpdateRequest: Failed
         if (this.Context.Request.Query["ActionName"] == "NewRequest" || 
-        this.Context.Request.Query["ActionName"] == "UpdateRequest" && 
-        this.Context.Request.Query["Status"] == "Failed")
+            this.Context.Request.Query["ActionName"] == "UpdateRequest" && 
+            this.Context.Request.Query["Status"] == "Failed")
         {
             var action = this.Context.Request.Query["ActionName"];
             <button class="button-class button-class-small" onclick="window.location = '/Request/NewRequest?ActionName=@action'">Try Again</button>
         }
 
+        // EditRequest and CancelRequest
         if (this.Context.Request.Query["ActionName"] == "EditRequest" || this.Context.Request.Query["ActionName"] == "CancelRequest")
         {
             <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Try Again</button>
         }
 
+        // UpdateUserProfile
         if(this.Context.Request.Query["ActionName"] == "UpdateUserProfile")
         {
             <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UpdateUserProfile'">Try Again</button>

@@ -8,6 +8,7 @@
 
     <script type="text/javascript">
 
+        // Variable Declarations
         let selectedIndex = -1;
         let selectedIndex2 = -1;
         let selectedRequestID = 0;
@@ -15,6 +16,7 @@
         let queryString = window.location.search;
         let query = new URLSearchParams(queryString);
 
+        // Check if the query has a 'RequestIndex' parameter.
         if(query.has("RequestIndex"))
         {
             let requestIndex = parseInt(query.get("RequestIndex"), 10);
@@ -23,6 +25,7 @@
 
         function row_selected(index) {
             if (selectedIndex != -1) {
+                // Reset the row color.
                 document.getElementById("ROW-" + selectedIndex).style.backgroundColor = "white";
                 document.getElementById("ROW-" + selectedIndex).style.color = "black";
             }
@@ -32,21 +35,25 @@
             }
             else {
                 selectedIndex = index;
+                // Set the row color.
                 document.getElementById("ROW-" + selectedIndex).style.backgroundColor = "rgba(240, 0, 0, 0.8)";
                 document.getElementById("ROW-" + selectedIndex).style.color = "white";
             }
 
             if (selectedIndex != -1) {
                 selectedRequestID = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+                // Get data from the request.
                 GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", selectedRequestID]], RequestSelected);
             }
             else {
+                // Set the inner html of the 'supporting-documents' element.
                 document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
             }
         }
 
         function row_selected2(index) {
             if (selectedIndex2 != -1) {
+                // Reset the row color.
                 document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "white";
                 document.getElementById("_ROW-" + selectedIndex2).style.color = "black";
             }
@@ -57,6 +64,7 @@
             }
             else {
                 selectedIndex2 = index;
+                // Set the row color.
                 document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "rgba(240, 0, 0, 0.8)";
                 document.getElementById("_ROW-" + selectedIndex2).style.color = "white";
             }
@@ -64,29 +72,34 @@
 
         function AcceptRequest() {
             if (selectedIndex != -1) {
+                // Post data
                 POST_DATA2("/Request/ManageRequests", null, [["ActionName", "AcceptRequest"], ["RequestID", selectedRequestID]], RequestApproved);
             }
         }
 
         function RequestApproved(status) {
             if (status == 1) {
+                // Reload the page.
                 window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
             }
         }
 
         function RejectRequest() {
             if (selectedIndex != -1) {
+                // Post data
                 POST_DATA2("/Request/ManageRequests", null, [["ActionName", "RejectRequest"], ["RowSelected", selectedIndex], ["RequestID", selectedRequestID]], RequestRejected);
             }
         }
 
         function RequestRejected(status) {
             if (status == 1) {
+                // Reload the page.
                 window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
             }
         }
 
         function RequestSelected(request) {
+            // Variable Declarations
             let requestId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
             let lecturerId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer-id");
             let lecturer = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer");
@@ -95,6 +108,7 @@
             let approved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-approved");
             let status = document.getElementById("ROW-" + selectedIndex).getAttribute("data-status");
 
+            // Assign the elements' inner html.
             document.getElementById("request-id").innerHTML = requestId;
             document.getElementById("lecturer-id").innerHTML = lecturerId;
             document.getElementById("lecturer").innerHTML = lecturer;
@@ -103,21 +117,25 @@
             document.getElementById("approved").innerHTML = approved;
             document.getElementById("status").innerHTML = status;
 
-
+            // Create a object using JSON.
             let supportingDocuments = JSON.parse(request.response);
 
+            // Check if the length of the 'supportingDocuments' object is greater than zero.
             if (supportingDocuments.length > 0) {
                 let html = "<table style='width: 100%'>";
 
+                // Iterate through the collection.
                 for (let i = 0; i < supportingDocuments.length; i++) {
                     html += "<tr id='_ROW-" + i + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
                 }
 
                 html += "</table>";
 
+                // Assign the html to the element.
                 document.getElementById("supporting-documents").innerHTML = html;
             }
             else {
+                // Assign the html to the element.
                 document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
             }
         }
@@ -125,17 +143,21 @@
         function DownloadDocument() {
             if (selectedIndex2 != -1) {
                 let requestID = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+                // Get data from the request.
                 GET_DATA("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["RequestID", requestID], ["FileIndex", selectedIndex2]], FileContentRecieved);
             }
             else {
+                // Show notification dialog.
                 alert("Please select a document to download.");
             }
         }
 
         function FileContentRecieved(status, content) {
+            // Variable Declarations
             let filename = content.substring(1, content.lastIndexOf(']'));
             let fileContent = content.substring(content.indexOf(']') + 1);
 
+            // Create an html element.
             let element = document.createElement("a");
             element.href = "data:application/octet-stream;base64," + fileContent;
             element.download = filename;
@@ -143,17 +165,18 @@
         }
 
         function UserLogout() {
+            // Perform a UserLogout request.
             window.location = "/UserAccount/UserLogout";
         }
 
         function ViewRequestInfo() { 
             if (selectedIndex != -1) { 
+                // Open a new window.
                 window.open("../html/RequestInfo.html?RequestID=" + selectedRequestID, null, "width=720,height=500");
             }
         }
 
     </script>
-
 }
 
 <div align="center">
@@ -187,11 +210,14 @@
                     <table id="requestList" style="width: 800px">
 
                         @{
+                            // Variable Declaration
                             int count = 0;
                         }
 
+                        <!-- Iterate through the collection. -->
                         @foreach (var request in Model)
                         {
+                            // Variable Declarations
                             string sApproved = request.RequestStatus == "Approved" ? "Yes" : "No";
                             string? sDateSubmitted = request?.DateSubmitted?.ToString("dd/MM/yyyy HH:mm:ss");
                             string? sDateApproved = request?.DateApproved?.ToString("dd/MM/yyyy HH:mm:ss");
@@ -285,6 +311,7 @@
 
                         <div id="supporting-documents" style="overflow-y: scroll; height: 140px">
 
+                            <!-- Check if the selected request index is '-1' -->
                             @if (CMCSMain.SelectedRequestIndex == -1)
                             {
                                 <br />
@@ -303,7 +330,6 @@
         </tr>
 
     </table>
-
 
     <hr style="width: 800px" />
 

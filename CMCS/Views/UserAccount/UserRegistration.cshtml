@@ -6,23 +6,29 @@
 
     <script type="text/javascript">
     
+        // Variable Declarations
         let qualificationDocuments = [];
         let identityDocuments = [];
 
         function rdLecturer_onclick() { 
+            // Select the 'rdLecturer' radio button.
             document.getElementById("rdLecturer").checked = true;
             document.getElementById("rdManager").checked = false;
         }
 
         function rdManager_onclick() {
+            // Select the 'rdManager' radio button.
             document.getElementById("rdLecturer").checked = false;
             document.getElementById("rdManager").checked = true;
         }
 
         function UploadQualificationDocuments() { 
+            // Create a fileDialog for a user to upload file(s).
             let fileElement = document.createElement("input");
             fileElement.type = "file";
+            // Allow multiple files to be selected.
             fileElement.multiple = true;
+            // Perform a click operation.
             fileElement.click();
 
             fileElement.onchange = function() {
@@ -32,9 +38,12 @@
         }
 
         function UploadIdentityDocuments() {
+            // Create a fileDialog for a user to upload file(s).
             let fileElement = document.createElement("input");
             fileElement.type = "file";
+            // All multiple files to be selected.
             fileElement.multiple = true;
+            // Perform a click operation.
             fileElement.click();
 
             fileElement.onchange = function () {
@@ -55,13 +64,16 @@
 
             // Obtain the user details from the registration form.
             if (document.getElementById("rdLecturer").checked) {
+                // Set the user account type to 'STANDARD' (Lecturer).
                 userAccountType = "STANDARD";
             }
             else
             {
+                // Set the user account type to 'ADMIN' (Manager).
                 userAccountType = "ADMIN";
             }
 
+            // Obtain the data from the form.
             userFirstName = document.getElementById("txtFirstName").value;
             userLastName = document.getElementById("txtLastName").value;
             userIdentityNumber = document.getElementById("txtIdentityNumber").value;
@@ -105,6 +117,7 @@
                         userData.QualificationDocuments[i].Name = qualificationDocuments[i].name;
                         userData.QualificationDocuments[i].Size = qualificationDocuments[i].size;
                         userData.QualificationDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        // Increase the count by one.
                         count++;
                     }
                 }
@@ -119,13 +132,17 @@
                         userData.IdentityDocuments[i].Name = identityDocuments[i].name;
                         userData.IdentityDocuments[i].Size = identityDocuments[i].size;
                         userData.IdentityDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        // Increase the count by one.
                         count++;
                     }
                 }
 
+                // Start a new interval.
                 let interval = setInterval(function () {
                     if (count == (qualificationDocuments.length + identityDocuments.length)) {
+                        // Post data
                         POST_DATA("/UserAccount/UserRegistration", JSON.stringify(userData), RegistrationSubmitted);
+                        // Stop the interval.
                         clearInterval(interval);
                     }
                 }, 1000);
@@ -137,14 +154,17 @@
         }
 
         function RegistrationSubmitted(status) {
+            // Obtain data from the form.
             let isLecturer = document.getElementById("rdLecturer").checked;
             
+            // Check if the status is OK.
             if(status == 1)
             {
                 let userId = document.getElementById("txtIdentityNumber").value;
                 window.location = "/Home/Status?ActionName=RegisterUser&Status=Success&UserId=" + userId + "&Role=" + (isLecturer ? "Lecturer" : "Manager");
             }
 
+            // Check if the operation failed.
             if(status == 2)
             {
                 window.location = "/Home/Status?ActionName=RegisterUser&Status=Failed&Role=" + (isLecturer ? "Lecturer" : "Manager");

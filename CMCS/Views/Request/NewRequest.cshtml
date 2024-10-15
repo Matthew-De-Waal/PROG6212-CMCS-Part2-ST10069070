@@ -1,11 +1,14 @@
 ﻿@model List<CMCSDocument>
 
 @{
+    // Obtain the action name from the request query.
     string? sAction = this.Context.Request.Query["ActionName"];
 
+    // Check if the action name is 'NewRequest'.
     if (sAction == "NewRequest")
         ViewData["Title"] = "New Request";
 
+    // Check if the action name is 'EditRequest'.
     if (sAction == "EditRequest")
         ViewData["Title"] = "Edit Request";
 }
@@ -14,13 +17,12 @@
 
     <script type="text/javascript">
 
+        // Variable Declarations
         let documents = [];
         let documentCount = parseInt(document.getElementById("DocumentCount").value, 10);
         let selectedIndex = -1;
         let selectedIndex2 = -1;
-
         let deletedDocuments = [];
-
 
         function row_selected(index) {
             if (selectedIndex == index)
@@ -28,9 +30,11 @@
             else
                 selectedIndex = index;
 
+            // Display all the documents to the user.
             DisplayDocuments();
 
             if (selectedIndex2 != -1) {
+                // Reset the row color.
                 document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = EMPTY_STRING;
                 selectedIndex2 = -1;
             }
@@ -38,6 +42,7 @@
 
         function row_selected2(index) {
             if (selectedIndex2 != -1) { 
+                // Reset the row color.
                 document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = EMPTY_STRING;
             }
 
@@ -45,14 +50,17 @@
                 selectedIndex2 = -1;
             else { 
                 selectedIndex2 = index;
+                // Set the row color.
                 document.getElementById("_ROW-" + selectedIndex2).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
             }
 
             selectedIndex = -1;
+            // Display all the documents to the user.
             DisplayDocuments();
         }
 
         function DisplayDocuments() {
+            // Check if the collection 'documents' is greater than zero in length.
             if (documents.length > 0) {
                 let html = "<table style='width: 100%'>";
 
@@ -75,9 +83,11 @@
         }
 
         function UploadDocument() {
+            // Create a file dialog element.
             let fileDialog = document.createElement("input");
             fileDialog.type = "file";
             fileDialog.multiple = true;
+            // Perform a click operation on the element.
             fileDialog.click();
 
             fileDialog.onchange = function () {
@@ -85,6 +95,7 @@
                     documents[documents.length] = fileDialog.files[i];
                 }
 
+                // Display all the documents to the user.
                 DisplayDocuments();
             }
         }
@@ -103,10 +114,12 @@
 
                 documents = list;
                 selectedIndex = -1;
+                // Display all the documents to the user.
                 DisplayDocuments();
             }
             else {
                 if (selectedIndex2 != -1) {
+                    // Delete the document.
                     let element = document.getElementById("_ROW-" + selectedIndex2);
                     deletedDocuments[deletedDocuments.length] = element.getAttribute("data-document");
                     element.remove();
@@ -115,12 +128,14 @@
                     selectedIndex2 = -1;
                 }
                 else {
+                    // Show notification dialog.
                     alert('No document selected.');
                 }
             }
         }
 
         function DeleteAllDocuments() { 
+            // Variable Declarations
             documents = [];
             deletedDocuments = "DELETE_ALL";
 
@@ -128,111 +143,139 @@
             selectedIndex2 = -1;
 
             document.getElementById("existing-documents").innerHTML = EMPTY_STRING;
+            // Display all the documents to the user.
             DisplayDocuments();
         }
 
         function SubmitRequest() {
+            // Variable Declarations
             let requestFor = document.getElementById("txtRequestFor").value;
             let hoursWorked = document.getElementById("txtHoursWorked").value;
             let hourlyRate = document.getElementById("txtHourlyRate").value;
             let description = document.getElementById("txtDescription").value;
 
+            // Validate the user input.
             let validation = requestFor.length > 0 &&
                 hoursWorked.length > 0 &&
                 hourlyRate.length > 0 &&
                 description.length > 0;
 
+            // Check if the validation process succeeded.
             if (validation) {
                 let SupportingDocuments = [];
                 let documentsRead = 0;
 
+                // Iterate through the 'documents' collection.
                 for (let i = 0; i < documents.length; i++) {
                     SupportingDocuments[i] = new Object();
                     SupportingDocuments[i].Name = documents[i].name;
                     SupportingDocuments[i].Size = documents[i].size;
 
+                    // Declare and instantiate a FileReader object.
                     let reader = new FileReader();
                     reader.readAsDataURL(documents[i]);
 
+                    // Assign the 'onload' event.
                     reader.onloadend = function () {
                         SupportingDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
+                        // Increase the count by one.
                         documentsRead++;
                     }
                 }
 
+                // Start a new interval that will check if the number of documents
+                // read matches with the total number of documents.
                 let interval = setInterval(function () {
                     if (documentsRead == documents.length) {
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments };
+                        // Post data
                         POST_DATA("/Request/NewRequest?ActionName=NewRequest", JSON.stringify(requestData), RequestSubmitted);
+                        // Clear the interval.
                         clearInterval(interval);
                     }
                 }, 1000);
             }
             else {
+                // Redirect the user to the Status page.
                 window.location = "/Home/Status?ActionName=NewRequest&Status=Failed";
             }
         }
 
         function RequestSubmitted(status) {
             if (status == 1) {
+                // Redirect the user to UserAccount page.
                 window.location = "/UserAccount/UserAccount";
             }
 
             if (status == 2) {
+                // Redirect the user to the Status page.
                 window.location = "/Home/Status?ActionName=NewRequest&Status=Failed";
             }
         }
 
         function UpdateRequest() {
+            // Variable Declarations
             let requestFor = document.getElementById("txtRequestFor").value;
             let hoursWorked = document.getElementById("txtHoursWorked").value;
             let hourlyRate = document.getElementById("txtHourlyRate").value;
             let description = document.getElementById("txtDescription").value;
 
+            // Perform data validation.
             let validation = requestFor.length > 0 &&
                 hoursWorked.length > 0 &&
                 hourlyRate.length > 0 &&
                 description.length > 0;
 
+            // Check if the validation process succeeded.
             if (validation) {
                 let SupportingDocuments = [];
                 let documentsRead = 0;
 
+                // Iterate through the collection.
                 for (let i = 0; i < documents.length; i++) {
                     SupportingDocuments[i] = new Object();
                     SupportingDocuments[i].Name = documents[i].name;
                     SupportingDocuments[i].Size = documents[i].size;
 
+                    // Declare and instantiate a FileReader object.
                     let reader = new FileReader();
                     reader.readAsDataURL(documents[i]);
 
+                    // Assign the 'onload' event.
                     reader.onloadend = function () {
                         SupportingDocuments[i].Content = reader.result.substring(reader.result.indexOf(",") + 1);
                         documentsRead++;
                     }
                 }
-                
+
+                // Start a new interval that will check if the number of documents
+                // read matches with the total number of documents.
                 let interval = setInterval(function () {
                     if (documentsRead == documents.length) {
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments, "DeletedDocuments": deletedDocuments };
                         let requestID = document.getElementById("RequestID").value;
 
+                        // Post data
                         POST_DATA("/Request/NewRequest?ActionName=EditRequest&RequestID=" + requestID, JSON.stringify(requestData), RequestUpdated);
+                        // Clear the interval.
                         clearInterval(interval);
                     }
                 }, 1000);
             }
             else {
+                // Redirect the user to the Status page.
                 window.location = "/Home/Status?ActionName=UpdateRequest&Status=Failed";
             }
         }
 
         function RequestUpdated(status) {
             if (status == 1) { 
+                // Redirect the user to the UserAccount page.
                 window.location = "/UserAccount/UserAccount";
             }
 
             if (status == 2) {
+                // Redirect the user to the Status page.
                 window.location = "/Home/Status?ActionName=UpdateRequest&Status=Failed";
             }
         }
@@ -249,11 +292,13 @@
         <div style="background-color: rgb(35, 35, 35); background-image: radial-gradient(#2b5679, rgb(35, 35, 35)); border-radius: 16px">
             <br />
             @{
+                // Check if the action name is 'NewRequest'.
                 if (sAction == "NewRequest")
                 {
                                                     <img src="~/images/new-icon-large.png" height="180" />
                 }
 
+                // Check if the action name is 'EditRequest'.
                 if (sAction == "EditRequest")
                 {
                                                     <img src="~/images/edit-icon-large.png" height="180" />
@@ -264,7 +309,7 @@
         </div>
         <div style="height: 2rem"></div>
 
-        <h3 align="left">@ViewData["Title"]</h3>
+        <h3 align="left">@ViewData?["Title"]</h3>
         <br />
 
         <table style="width: 600px" cellpadding="4">
@@ -294,12 +339,15 @@
                 </tr>
             </table>
             <div id="documentList" style="overflow-y: auto">
+                <!-- Check if the method is 'GET' and the action name is 'EditRequest'. -->
                 @if (this.Context.Request.Method == "GET" && this.Context.Request.Query["ActionName"] == "EditRequest")
                 {
-                    if (this.Model.Count > 0)
+                    // Check if the count is greater than zero.
+                    if (this.Model?.Count > 0)
                     {
                         <table id="existing-documents" style="width: 100%">
 
+                            <!-- Iterate through the collection. -->
                             @for (int i = 0; i < Model.Count; i++)
                             {
                                 <tr id="_ROW-@i" data-document="@Model[i].DocumentID" onclick='row_selected2(@i)'><td style='width: 50%'>@Model[i].Name</td><td style='width: 25%'>@Model[i].Type</td><td style='width: 25%'>@Model[i].Size</td></tr>
@@ -344,12 +392,14 @@
         <br />
         <div align="right">
             @{
+                // Check if the action name is 'NewRequest'.
                 if (sAction == "NewRequest")
                 {
                                                     <button class="button-class button-class-small" onclick="SubmitRequest()">Submit</button>
                                                     <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
                 }
 
+                // Check if the action name is 'EditRequest'.
                 if (sAction == "EditRequest")
                 {
                                                     <button class="button-class button-class-small" onclick="UpdateRequest()">Update</button>

@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Cancel Request";
 }
 
@@ -7,34 +6,42 @@
 
     <script type="text/javascript">
 
+        // Variable declarations
         let queryString = window.location.search;
         let query = new URLSearchParams(queryString);
         let requestId = query.get("RequestID");
 
+        // Assign the 'request-id' element.
         document.getElementById("request-id").innerHTML = "Request ID: " + requestId;
         
         function Proceed() { 
+            // Get the data from the request.
             GET_DATA("/Request/GetRequestStatus?RequestID=" + requestId, null, function (status, response) {
+                // Check if the response is 'Pending'.
                 if (response == "Pending") {
+                    // Post data
                     POST_DATA2("/Request/CancelRequest", null, [["ActionName", "CancelRequest"], ["RequestID", requestId]], function (status) {
+                        // Check if the status is OK.
                         if (status == 1) {
+                            // Redirect the user to the UserAccount page.
                             window.location = "/UserAccount/UserAccount";
                         }
                     });
                 }
                 else { 
+                    // Redirect the user to the status page.
                     window.location = "/Home/Status?ActionName=CancelRequest&Status=Failed&Reason=NotPending";
                 }
             });
         }
 
         function Cancel() { 
+            // Redirect the user to the UserAccount page.
             window.location = "/UserAccount/UserAccount";
         }
     </script>
 
 }
-
 
 <div align="center">
     <div style="height: 3rem"></div>

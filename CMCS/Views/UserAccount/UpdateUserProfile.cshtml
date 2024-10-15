@@ -6,6 +6,7 @@
 
     <script type="text/javascript">
     
+        // Variable Declarations
         let qualificationDocuments = null;
         let identityDocuments = null;
 
@@ -18,27 +19,34 @@
         let deleted_qualification_items = [];
         let deleted_identity_items = [];
 
-
+        // Get data from the request.
         GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetUserAccountData"]], function(status, response) {
+            // Check if the status is OK.
             if(status == 1)
             {
+                // Create an object using JSON.
                 let userData = JSON.parse(response);
 
+                // Assign the values of each element with the userData.
                 document.getElementById("txtFirstName").value = userData.FirstName;
                 document.getElementById("txtLastName").value = userData.LastName;
                 document.getElementById("txtIdentityNumber").value = userData.IdentityNumber;
                 document.getElementById("txtEmailAddress").value = userData.EmailAddress;
 
+                // Obtain the documents from the userData.
                 qualificationDocuments = userData.QualificationDocuments;
                 identityDocuments = userData.IdentityDocuments;
 
+                // Display all the documents to the user.
                 DisplayDocuments();
 
+                // Check if the 'Recovery Method 1' is enabled.
                 if (userData.RecoveryMethod1Enabled) { 
                     document.getElementById("chkRecoveryMethod1").checked = true;
                     document.getElementById("btnDownload").disabled = false;
                 }
 
+                // Check if the 'Recovery Method 2' is enabled.
                 if (userData.RecoveryMethod2Enabled) {
                     let accountRecovery = userData.AccountRecovery;
                     let securityQuestion = accountRecovery.split(';')[0];
@@ -53,6 +61,7 @@
 
         function qualification_selected(index) {
             if (selectedQualificationIndex != -1) { 
+                // Reset the row color.
                 document.getElementById("_1_ROW-" + selectedQualificationIndex).style.backgroundColor = EMPTY_STRING;
             }
 
@@ -61,12 +70,14 @@
             else
             {
                 selectedQualificationIndex = index;
+                // Set the row color.
                 document.getElementById("_1_ROW-" + selectedQualificationIndex).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
             }
         }
 
         function identity_selected(index) { 
             if (selectedIdentityIndex != -1) { 
+                // Reset the row color.
                 document.getElementById("_2_ROW-" + selectedIdentityIndex).style.backgroundColor = EMPTY_STRING;
             }
 
@@ -75,28 +86,34 @@
             else
             {
                 selectedIdentityIndex = index;
+                // Set the row color.
                 document.getElementById("_2_ROW-" + selectedIdentityIndex).style.backgroundColor = "rgba(255, 0, 0, 0.4)";
             }
         }
 
         function DisplayDocuments()
         {
+            // Variable Declarations
             let qualificationHtml = "<table style='width: 100%'>";
             let identityHtml = "<table style='width: 100%'>";
 
+            // Iterate through the 'qualificationDocuments' collection.
             for (let i = 0; i < qualificationDocuments.length; i++) {
                 qualificationHtml += "<tr id='_1_ROW-" + i + "' onclick='qualification_selected(" + i + ")'><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + qualificationDocuments[i].Size + "</td></tr>";
             }
 
+            // Iterate through the 'uploadedQualificationDocuments' collection.
             for(let i = 0; i < uploadedQualificationDocuments.length; i++)
             {
                 qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].type + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].size + "</td></tr>";
             }
 
+            // Iterate through the 'identityDocuments' collection.
             for (let i = 0; i < identityDocuments.length; i++) {
                 identityHtml += "<tr id='_2_ROW-" + i + "' onclick='identity_selected(" + i + ")'><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + identityDocuments[i].Size + "</td></tr>";
             }
 
+            // Iterate through the 'uploadedIdentityDocuments' collection.
             for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
                 identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].type + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].size + "</td></tr>";
             }
@@ -104,18 +121,22 @@
             qualificationHtml += "</table>";
             identityHtml += "</table>";
 
+            // Assign the html to each element.
             document.getElementById("qualifications").innerHTML = qualificationHtml;
             document.getElementById("identity").innerHTML = identityHtml;
         }
 
         function UploadQualificationDocument() { 
+            // Create a fileDialog element.
             let fileDialog = document.createElement("input");
             fileDialog.type = "file";
+            // Allow multiple files to be selected.
             fileDialog.multiple = true;
             
             fileDialog.onchange = function() {
                 let files = fileDialog.files;
 
+                // Iterate through the collection.
                 for(let i = 0; i < files.length; i++)
                 {
                     uploadedQualificationDocuments[uploadedQualificationDocuments.length] = files[i];
@@ -123,63 +144,76 @@
                 }
             };
 
+            // Perform a click operation on the fileDialog element.
             fileDialog.click();
         }
 
         function DeleteQualificationDocument() { 
             if(selectedQualificationIndex >= qualificationDocuments.length)
             {
+                // Delete an uploaded document.
                 let index = selectedQualificationIndex - qualificationDocuments.length;
                 uploadedQualificationDocuments = delete_item(uploadedQualificationDocuments, index);
             }
             else
             {
+                // Delete an existing document.
                 qualificationDocuments = delete_item(qualificationDocuments, selectedQualificationIndex);
                 deleted_qualification_items[deleted_qualification_items.length] = qualificationDocuments[selectedQualificationIndex].DocumentID;
             }
 
             selectedQualificationIndex = -1;
+            // Display all the documents to the user.
             DisplayDocuments();
         }
 
         function DeleteAllQualificationDocuments() {
+            // Variable Declaration
             deleted_qualification_items = "DELETE_ALL";
             qualificationDocuments = [];
             uploadedQualificationDocuments = [];
 
+            // Display all the documents to the user.
             DisplayDocuments();
         }
 
         function UploadIdentityDocument() { 
+            // Create a fileDialog element.
             let fileDialog = document.createElement("input");
             fileDialog.type = "file";
+            // Allow multiple files to be selected.
             fileDialog.multiple = true;
 
             fileDialog.onchange = function () {
                 let files = fileDialog.files;
 
+                // Iterate through the collection.
                 for (let i = 0; i < files.length; i++) {
                     uploadedIdentityDocuments[uploadedIdentityDocuments.length] = files[i];
                     DisplayDocuments();
                 }
             };
 
+            // Perform a click operation.
             fileDialog.click();
         }
 
         function DeleteIdentityDocument() { 
             if(selectedIdentityIndex >= identityDocuments.length)
             {
+                // Delete an uploaded document.
                 let index = selectedIdentityIndex - identityDocuments.length;
                 uploadedIdentityDocuments = delete_item(uploadedIdentityDocuments, index);
             }
             else
             {
+                // Delete an existing document.
                 identityDocuments = delete_item(identityDocuments, selectedIdentityIndex);
                 deleted_identity_items[deleted_identity_items.length] = identityDocuments[selectedIdentityIndex].DocumentID;
             }
 
             selectedIdentityIndex = -1;
+            // Display all the documents to the user.
             DisplayDocuments();
         }
 
@@ -193,11 +227,13 @@
 
         function UpdateAccount()
         {
+            // Variable Declarations
             let firstName = document.getElementById("txtFirstName").value;
             let lastName = document.getElementById("txtLastName").value;
             let identityNumber = document.getElementById("txtIdentityNumber").value;
             let emailAddress = document.getElementById("txtEmailAddress").value;
 
+            // Data validation
             let validation = firstName.length > 0 &&
                 lastName.length > 0 &&
                 identityNumber.length > 0 &&
@@ -209,16 +245,21 @@
             let question = EMPTY_STRING;
             let answer = EMPTY_STRING;
 
+            // Check if 'Recovery Method 1' is enabled.
             if (recoveryMethod2Enabled) { 
                 question = document.getElementById("txtQuestion").value;
                 answer = document.getElementById("txtAnswer").value;
 
+                // Extend the validation process.
                 validation = validation && question.length > 0 && answer.length > 0;
             }
 
+            // Check if the validation process succeeded.
             if (validation) {
+                // Create a new object.
                 let userData = new Object();
 
+                // Assign data to the object.
                 userData.FirstName = firstName;
                 userData.LastName = lastName;
                 userData.IdentityNumber = identityNumber;
@@ -229,70 +270,90 @@
                 userData.SecurityQuestion = question;
                 userData.SecurityAnswer = answer;
 
+                // Variable Declarations
                 let qualification_documents = [];
                 let identity_documents = [];
                 let documentsRead = 0;
 
+                // Iterate through the 'uploadedQualificationDocuments' collection.
                 for (let i = 0; i < uploadedQualificationDocuments.length; i++) {
                     qualification_documents[i].Name = uploadedQualificationDocuments[i].name;
                     qualification_documents[i].Size = uploadedQualificationDocuments[i].size;
 
+                    // Create a FileReader object.
                     let reader = new FileReader();
                     reader.readAsDataURL(uploadedQualificationDocuments[i]);
 
                     reader.onloadend = function () {
                         qualification_documents[i].Content = reader.result;
+                        // Increase the count by one.
                         documentsRead++;
                     };
                 }
 
+                // Iterate through the 'uploadedIdentityDocuments' collection.
                 for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
                     identity_documents[i].Name = uploadedIdentityDocuments[i].name;
                     identity_documents[i].Size = uploadedIdentityDocuments[i].size;
 
+                    // Create a FileReader object.
                     let reader = new FileReader();
                     reader.readAsDataURL(uploadedIdentityDocuments[i]);
 
                     reader.onloadend = function () {
                         identity_documents[i].Content = reader.result;
+                        // Increase the count by one.
                         documentsRead++;
                     };
                 }
 
+                // Assign data to the variable 'userData'.
                 userData.QualificationDocuments = qualification_documents;
                 userData.IdentityDocuments = identity_documents;
                 userData.DeletedQualificationDocuments = deleted_qualification_items;
                 userData.DeletedIdentityDocuments = deleted_identity_items;
 
+                // Start a new interval.
                 let interval = setInterval(function () {
+                    // Check if the number of documents read, matches with the total number of documents.
                     if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) {
+                        // Post data
                         POST_DATA2("/UserAccount/UpdateUserProfile", JSON.stringify(userData), [["ActionName", "UpdateAccount"]], function (status) {
+                            // Check if the status is OK.
                             if (status == 1) {
+                                // Redirect the user to the UserAccount page.
                                 window.location = "/UserAccount/UserAccount";
                             }
                         });
 
+                        // Stop the interval.
                         clearInterval(interval);
                     }
                 });
             }
             else { 
+                // Redirect the user to the Status page.
                 window.location = "/Home/Status?ActionName=UpdateUserProfile&Status=Failed";
             }
         }
 
         function CancelUpdate()
         {
+            // Redirect the user to the UserAccount page.
             window.location = "/UserAccount/UserAccount";
         }
 
         function DownloadRecoveryFile() { 
+            // Get data from the request.
             GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetRecoveryFile"]], function (status, response) {
+                // Check if the status is OK.
                 if(status == 1)
                 {
+                    // Create a new html element that will download the recovery file.
                     let element = document.createElement("a");
                     element.href = "data:text/plain;base64," + btoa(response);
                     element.download = "RECOVERY-FILE.dat";
+                    // Perform a click operation.
                     element.click();
                 }
             });

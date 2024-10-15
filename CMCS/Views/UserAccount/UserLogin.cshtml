@@ -9,21 +9,26 @@
     <script type="text/javascript">
 
         function UserLogin() {
+            // Variable Declarations
             let userId = document.getElementById("txtUserID").value;
             let userPassword = document.getElementById("txtPassword").value;
             
+            // Post data
             POST_DATA("/UserAccount/UserLogin", JSON.stringify({ "UserId": userId, "Password": userPassword }), UserLoginResult);
         }
 
         function UserLoginResult(status) {
+            // Check if the status is OK.
             if (status == 1) {
                 window.location = "/UserAccount/UserAccount";
             }
 
+            // Check if the operation failed.
             if (status == 2) {
                 window.location = "/Home/Status?ActionName=UserLogin&Status=Failed";
             }
 
+            // Check if the status is OK and if a manager logged in.
             if(status == 3)
             {
                 window.location = "/Request/ManageRequests";
@@ -31,7 +36,6 @@
         }
 
     </script>
-
 }
 
 

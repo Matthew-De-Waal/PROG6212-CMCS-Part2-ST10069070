@@ -1,8 +1,10 @@
 ﻿@{
+    // Variable Declaration
     string? lecturerID = string.Empty;
     string? fullName = string.Empty;
     string? emailAddress = string.Empty;
 
+    // Check if the user is logged on.
     if (CMCSMain.User.LoggedOn)
     {
         fullName = $"{CMCSMain.User.FirstName} {CMCSMain.User.LastName}";
@@ -16,7 +18,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CMCS</title>
+    <title>CMCS - @ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CMCS.styles.css" asp-append-version="true" />
@@ -41,6 +43,7 @@
                         </li>
                     </ul>
 
+                    <!-- Check if the user is logged on. -->
                     @if (CMCSMain.User.LoggedOn)
                     {
                         <ul id="user-account-info" class="navbar-nav">

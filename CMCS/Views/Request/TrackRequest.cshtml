@@ -1,41 +1,53 @@
 ﻿@{
     ViewData["Title"] = "Track Request";
 
+    // Variable Declarations
     string? requestID = this.Context.Request.Query["RequestID"];
     string? dateSubmitted = string.Empty;
     string? status = string.Empty;
     string? approvedBy = string.Empty;
 
+    // Check if the requestID is not null.
     if(requestID != null)
     {
         string sql = $"SELECT * FROM Request WHERE RequestID = {requestID}";
 
+        // Open the database connection.
         CMCSDB.OpenConnection();
+        // Declare and instantiate a SqlDataReader object.
         var reader = CMCSDB.RunSQLResult(sql);
+        // Read data
         reader.Read();
 
         dateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString()).ToString("yyyy/MM/dd HH:mm:ss");
         status = reader["RequestStatus"].ToString();
 
+        // Close the SqlDataReader object.
         reader.Close();
 
         string sql3 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestID}";
         reader = CMCSDB.RunSQLResult(sql3);
 
+        // Check if the reader has rows.
         if (reader.HasRows)
         {
+            // Read data
             reader.Read();
             int managerID = Convert.ToInt32(reader["ManagerID"].ToString());
+            // Close the SqlDataReader object.
             reader.Close();
 
             string sql2 = $"SELECT FirstName, LastName FROM Manager WHERE ManagerID = {managerID}";
             reader = CMCSDB.RunSQLResult(sql2);
+            // Read data
             reader.Read();
 
             approvedBy = $"{reader["FirstName"]} {reader["LastName"]}";
         }
 
+        // Close the SqlDataReader object.
         reader.Close();
+        // Close the database connection.
         CMCSDB.CloseConnection();
     }
 }
@@ -69,16 +81,19 @@
                 <tr>
                     <th>Status:</th>
 
+                    <!-- Check if the status is approved -->
                     @if (status == "Approved")
                     {
                         <td><span style="background-color: black; color: lawngreen; width: fit-congtent">@status</span></td>
                     }
+                    <!-- Check if the status is Rejected -->
                     else if(status == "Rejected")
                     {
                         <td><span style="background-color: black; color: red; width: fit-content">@status</span></td>
                     }
                     else
                     {
+                        <!-- Display the status to the user. -->
                         <td>@status</td>
                     }
                 </tr>
