@@ -10,11 +10,19 @@ using System.Data.SqlClient;
 using Humanizer;
 using Microsoft.CodeAnalysis;
 using System.Net.Mail;
+using CMCS.DBContext;
 
 namespace CMCS.Controllers
 {
     public class UserAccountController : Controller
     {
+        private readonly AppDbContext _context;
+
+        public UserAccountController(AppDbContext context)
+        {
+            _context = context;
+        }
+
         /// <summary>
         /// CMCS UserLogin page
         /// </summary>
@@ -435,75 +443,73 @@ namespace CMCS.Controllers
                 // Check if 'Recovery Method 1' is enabled.
                 if (recoveryMethod1Enabled)
                 {
-                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'FILE'";
-                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+                    bool success = _context.AccountRecovery.Where(i => i.UserID == CMCSMain.User.IdentityNumber && i.Method == "FILE").ToList().Count > 0;
 
-                    // Check if the reader cannot read data.
-                    if (!reader.Read())
+                    if (!success)
                     {
-                        // Close the SqlDataReader object.
-                        reader.Close();
-
                         // Generate a random key of 30 characters.
                         string key = CMCSMain.GenerateKey(30);
-                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('FILE', '{key}', '{CMCSMain.User.IdentityNumber}')";
-                        // Run a SQL query.
-                        CMCSDB.RunSQLNoResult(sql2);
+
+                        AccountRecovery recovery = new AccountRecovery();
+                        recovery.Method = "FILE";
+                        recovery.Value = key;
+                        recovery.UserID = CMCSMain.User.IdentityNumber;
+
+                        _context.AccountRecovery.Add(recovery);
+                        _context.SaveChangesAsync();
                     }
                     else
                     {
-                        // Close the reader.
-                        reader.Close();
-
                         // Check if a new recovery file must be generated.
                         if (generateNewRecoveryFile)
                         {
                             // Generate a random key of 30 characters.
                             string key = CMCSMain.GenerateKey(30);
-                            string sql2 = $"UPDATE AccountRecovery SET Value = '{key}' WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                            // Run a SQL query.
-                            CMCSDB.RunSQLNoResult(sql2);
+
+                            AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
+                            recovery.Value = key;
+                            _context.Update(recovery);
+                            _context.SaveChangesAsync();
                         }
                     }
                 }
                 else
                 {
-                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                    // Run a SQL query.
-                    CMCSDB.RunSQLNoResult(sql);
+                    AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
+                    _context.Remove(recovery);
+                    _context.SaveChangesAsync();
                 }
 
                 // Check if 'Recovery Method 2' is enabled.
                 if (recoveryMethod2Enabled)
                 {
-                    string sql = $"SELECT * FROM AccountRecovery WHERE UserID = '{CMCSMain.User.IdentityNumber}' AND Method = 'QUESTION'";
-                    SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+                    bool success = _context.AccountRecovery.Where(i => i.UserID == CMCSMain.User.IdentityNumber && i.Method == "FILE").ToList().Count > 0;
 
                     // Check if the reader cannot read data.
-                    if (!reader.Read())
+                    if (!success)
                     {
-                        // Close the reader.
-                        reader.Close();
+                        AccountRecovery recovery = new AccountRecovery();
+                        recovery.Method = "QUESTION";
+                        recovery.Value = $"{securityQuestion};{securityAnswer}";
+                        recovery.UserID = CMCSMain.User.IdentityNumber;
 
-                        string sql2 = $"INSERT INTO AccountRecovery(Method, Value, UserID) VALUES ('QUESTION', '{securityQuestion};{securityAnswer}', '{CMCSMain.User.IdentityNumber}')";
-                        // Run a SQL query.
-                        CMCSDB.RunSQLNoResult(sql2);
+                        _context.AddAsync(recovery);
+                        _context.SaveChangesAsync();
                     }
                     else
                     {
-                        // Close the reader.
-                        reader.Close();
+                        AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
+                        recovery.Value = $"{securityQuestion};{securityAnswer}";
 
-                        string sql2 = $"UPDATE AccountRecovery SET Value = '{securityQuestion};{securityAnswer}' WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                        // Run a SQL query.
-                        CMCSDB.RunSQLNoResult(sql2);
+                        _context.Update(recovery);
+                        _context.SaveChangesAsync();
                     }
                 }
                 else
                 {
-                    string sql = $"DELETE FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-                    // Run a SQL query.
-                    CMCSDB.RunSQLNoResult(sql);
+                    AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
+                    _context.Remove(recovery);
+                    _context.SaveChangesAsync();
                 }
 
                 // Insert the uploaded qualification documents.
@@ -881,22 +887,17 @@ namespace CMCS.Controllers
         /// </summary>
         private void UserAccount_GetRecoveryFile()
         {
-            string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'FILE' AND UserID = '{CMCSMain.User.IdentityNumber}'";
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-
-            // Check if the reader can read data.
-            if(reader.Read())
+            var result = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList();
+            
+            if(result.Count > 0)
             {
-                string? value = reader["Value"].ToString();
+                string? value = result[0].Value;
 
                 // The request succeeded.
                 this.Response.StatusCode = 1;
                 this.Response.WriteAsync($"UserID={CMCSMain.User.IdentityNumber};RecoveryKey={value}");
                 this.Response.CompleteAsync();
             }
-
-            // Close the SqlDataReader object.
-            reader.Close();
         }
 
         /// <summary>
@@ -906,24 +907,18 @@ namespace CMCS.Controllers
         {
             // Get the user id from the request header 'UserID'.
             string? userId = this.Request.Headers["UserID"];
-            string sql = $"SELECT * FROM AccountRecovery WHERE Method = 'QUESTION' AND UserID = '{userId}'";
-            // Create a SqlDataReader object.
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+            var result = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == userId).ToList();
 
-            // Check if the reader can read data.
-            if(reader.Read())
+            if(result.Count > 0)
             {
-                string? value = reader["Value"].ToString();
-                string securityQuestion = value.Split(';')[0];
+                string? value = result[0].Value;
+                string securityQuestion = value.Split(";")[0];
 
                 // The request succeeded.
                 this.Response.StatusCode = 1;
                 this.Response.WriteAsync(securityQuestion);
                 this.Response.CompleteAsync();
             }
-
-            // Close the SqlDataReader object.
-            reader.Close();
         }
 
         /// <summary>
