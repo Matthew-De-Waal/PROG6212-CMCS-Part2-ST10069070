@@ -13,34 +13,49 @@
     <script src="../js/site.js"></script>
     <script type="text/javascript">
 
+        // Variable Declarations
         let queryString = window.location.search;
         let query = new URLSearchParams(queryString);
         let requestId = query.get("RequestID");
 
+        // Get data from the request.
         GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", requestId]], function (request) {
-            let requestId = request.getResponseHeader("RequestID");
-            let lecturerId = request.getResponseHeader("LecturerID");
-            let identityNumber = request.getResponseHeader("IdentityNumber");
-            let lecturer = request.getResponseHeader("Lecturer");
-            let requestFor = request.getResponseHeader("RequestFor");
-            let hoursWorked = request.getResponseHeader("HoursWorked");
-            let hourlyRate = request.getResponseHeader("HourlyRate");
-            let description = request.getResponseHeader("Description");
+            // The request status is OK.
+            if (request.status == 1) {
+                // Variable Declarations
+                let requestId = request.getResponseHeader("RequestID");
+                let lecturerId = request.getResponseHeader("LecturerID");
+                let identityNumber = request.getResponseHeader("IdentityNumber");
+                let lecturer = request.getResponseHeader("Lecturer");
+                let requestFor = request.getResponseHeader("RequestFor");
+                let hoursWorked = request.getResponseHeader("HoursWorked");
+                let hourlyRate = request.getResponseHeader("HourlyRate");
+                let description = request.getResponseHeader("Description");
 
-            document.getElementById("lblRequestID").innerHTML = requestId;
-            document.getElementById("lblLecturerID").innerHTML = lecturerId;
-            document.getElementById("lblIdentityNumber").innerHTML = identityNumber;
-            document.getElementById("lblLecturer").innerHTML = lecturer;
-            document.getElementById("lblRequestFor").innerHTML = requestFor;
-            document.getElementById("lblHoursWorked").innerHTML = hoursWorked;
-            document.getElementById("lblHourlyRate").innerHTML = hourlyRate;
-            document.getElementById("lblDescription").innerHTML = description;
+                // Assign data to the elements.
+                document.getElementById("lblRequestID").innerHTML = requestId;
+                document.getElementById("lblLecturerID").innerHTML = lecturerId;
+                document.getElementById("lblIdentityNumber").innerHTML = identityNumber;
+                document.getElementById("lblLecturer").innerHTML = lecturer;
+                document.getElementById("lblRequestFor").innerHTML = requestFor;
+                document.getElementById("lblHoursWorked").innerHTML = hoursWorked;
+                document.getElementById("lblHourlyRate").innerHTML = hourlyRate;
+                document.getElementById("lblDescription").innerHTML = description;
+
+                document.getElementById("lblStatus").hidden = true;
+            }
         });
 
     </script>
 </head>
 <body>
     <div align="center">
+        <img src="../images/cmcs-logo.png" height="200" />
+        <br />
+        <br />
+
+        <span id="lblStatus"><i>Loading, please wait...</i></span>
+
         <h2>View Request Information</h2>
         <table border="1" style="width: 500px">
             <tr>

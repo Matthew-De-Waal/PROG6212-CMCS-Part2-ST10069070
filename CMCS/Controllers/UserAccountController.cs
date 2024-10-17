@@ -3,13 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
 using CMCS.DBContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMCS.Controllers
 {
     public class UserAccountController : Controller
     {
+        // Data fields
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Master constructor
+        /// </summary>
+        /// <param name="context"></param>
         public UserAccountController(AppDbContext context)
         {
             _context = context;
@@ -398,7 +404,7 @@ namespace CMCS.Controllers
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
-        public IActionResult UpdateUserProfile()
+        public async Task<IActionResult> UpdateUserProfile()
         {
             // Open the database connection.
             CMCSDB.OpenConnection();
@@ -473,7 +479,7 @@ namespace CMCS.Controllers
                         recovery.UserID = CMCSMain.User.IdentityNumber;
 
                         _context.AccountRecovery.Add(recovery);
-                        _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -485,8 +491,9 @@ namespace CMCS.Controllers
 
                             AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
                             recovery.Value = key;
+                            
                             _context.Update(recovery);
-                            _context.SaveChangesAsync();
+                            await _context.SaveChangesAsync();
                         }
                     }
                 }
@@ -497,14 +504,14 @@ namespace CMCS.Controllers
                     if (result.Count > 0)
                     {
                         _context.Remove(result[0]);
-                        _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
                 }
 
                 // Check if 'Recovery Method 2' is enabled.
                 if (recoveryMethod2Enabled)
                 {
-                    bool success = _context.AccountRecovery.Where(i => i.UserID == CMCSMain.User.IdentityNumber && i.Method == "FILE").ToList().Count > 0;
+                    bool success = _context.AccountRecovery.Where(i => i.UserID == CMCSMain.User.IdentityNumber && i.Method == "FILE").ToListAsync().Result.Count > 0;
 
                     // Check if the reader cannot read data.
                     if (!success)
@@ -514,8 +521,8 @@ namespace CMCS.Controllers
                         recovery.Value = $"{securityQuestion};{securityAnswer}";
                         recovery.UserID = CMCSMain.User.IdentityNumber;
 
-                        _context.AddAsync(recovery);
-                        _context.SaveChangesAsync();
+                        await _context.AddAsync(recovery);
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -523,7 +530,7 @@ namespace CMCS.Controllers
                         recovery.Value = $"{securityQuestion};{securityAnswer}";
 
                         _context.Update(recovery);
-                        _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
                 }
                 else
@@ -533,7 +540,7 @@ namespace CMCS.Controllers
                     if (result.Count > 0)
                     {
                         _context.Remove(result[0]);
-                        _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
                 }
 
@@ -719,7 +726,7 @@ namespace CMCS.Controllers
 
                     if (userAccountId != 0)
                     {
-                        string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = '{userAccountId}'";
+                        string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = {userAccountId}";
                         CMCSDB.RunSQLNoResult(sql);
 
                         // The request succeeded.
@@ -731,7 +738,7 @@ namespace CMCS.Controllers
 
                         if (userAccountId != 0)
                         {
-                            string sql = $"UPDATE Manager SET Password = '{newPassword}' WHERE ManagerID = '{userAccountId}'";
+                            string sql = $"UPDATE Manager SET Password = '{newPassword}' WHERE ManagerID = {userAccountId}";
                             CMCSDB.RunSQLNoResult(sql);
 
                             // The request succeeded.
@@ -890,6 +897,9 @@ namespace CMCS.Controllers
             CMCSDB.CloseReader();
         }
 
+        /// <summary>
+        /// This method is part of the 'UserAccount' method.
+        /// </summary>
         private void UserAccount_GetDocumentContent2()
         {
             int documentId = Convert.ToInt32(this.Request.Headers["DocumentID"]);
@@ -973,7 +983,7 @@ namespace CMCS.Controllers
                 string? documentContent = reader["Content"].ToString();
 
                 // Declare a new object of type 'CMCSDocument'.
-                Models.Document document = new()
+                Document document = new()
                 {
                     DocumentID = documentId,
                     Name = documentName,

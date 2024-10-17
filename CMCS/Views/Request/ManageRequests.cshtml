@@ -22,6 +22,9 @@
             row_selected(requestIndex);
         }
 
+        document.getElementById("btnViewRequestInfo").disabled = true;
+        document.getElementById("btnViewLecturerInfo").disabled = true;
+
         function row_selected(index) {
             if (selectedIndex != -1) {
                 // Reset the row color.
@@ -45,8 +48,11 @@
                 document.getElementById("btnManageAccount").disabled = true;
                 document.getElementById("btnViewDocument").disabled = true;
                 document.getElementById("btnDownloadDocument").disabled = true;
-                document.getElementById("btnViewRequestInfo").disabled = true;
-                document.getElementById("btnViewLecturerInfo").disabled = true;
+
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
 
                 // Get data from the request.
                 GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", selectedRequestID]], RequestSelected);
@@ -54,6 +60,18 @@
             else {
                 // Set the inner html of the 'supporting-documents' element.
                 document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
+
+                // Assign the elements' inner html.
+                document.getElementById("request-id").innerHTML = EMPTY_STRING;
+                document.getElementById("lecturer-id").innerHTML = EMPTY_STRING;
+                document.getElementById("lecturer").innerHTML = EMPTY_STRING;
+                document.getElementById("date-submitted").innerHTML = EMPTY_STRING;
+                document.getElementById("date-approved").innerHTML = EMPTY_STRING;
+                document.getElementById("approved").innerHTML = EMPTY_STRING;
+                document.getElementById("status").innerHTML = EMPTY_STRING;
+
+                document.getElementById("btnViewRequestInfo").disabled = true;
+                document.getElementById("btnViewLecturerInfo").disabled = true;
             }
         }
 
@@ -78,6 +96,11 @@
 
         function AcceptRequest() {
             if (selectedIndex != -1) {
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 // Post data
                 POST_DATA2("/Request/ManageRequests", null, [["ActionName", "AcceptRequest"], ["RequestID", selectedRequestID]], RequestApproved);
             }
@@ -85,6 +108,10 @@
 
         function RequestApproved(status) {
             if (status == 1) {
+                document.getElementById("main-screen").style.position = "relative";
+                document.getElementById("main-footer").style.position = EMPTY_STRING;
+                document.getElementById("loading-screen").hidden = true;
+
                 // Reload the page.
                 window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
             }
@@ -92,6 +119,11 @@
 
         function RejectRequest() {
             if (selectedIndex != -1) {
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 // Post data
                 POST_DATA2("/Request/ManageRequests", null, [["ActionName", "RejectRequest"], ["RowSelected", selectedIndex], ["RequestID", selectedRequestID]], RequestRejected);
             }
@@ -99,57 +131,69 @@
 
         function RequestRejected(status) {
             if (status == 1) {
+                document.getElementById("main-screen").style.position = "relative";
+                document.getElementById("main-footer").style.position = EMPTY_STRING;
+                document.getElementById("loading-screen").hidden = true;
+
                 // Reload the page.
                 window.location = "/Request/ManageRequests?RequestIndex=" + selectedIndex;
             }
         }
 
         function RequestSelected(request) {
-            // Variable Declarations
-            let requestId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
-            let lecturerId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer-id");
-            let lecturer = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer");
-            let dateSubmitted = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-submitted");
-            let dateApproved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-approved");
-            let approved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-approved");
-            let status = document.getElementById("ROW-" + selectedIndex).getAttribute("data-status");
+            if (request.status == 1) {
+                document.getElementById("main-screen").style.position = "relative";
+                document.getElementById("main-footer").style.position = EMPTY_STRING;
+                document.getElementById("loading-screen").hidden = true;
 
-            // Assign the elements' inner html.
-            document.getElementById("request-id").innerHTML = requestId;
-            document.getElementById("lecturer-id").innerHTML = lecturerId;
-            document.getElementById("lecturer").innerHTML = lecturer;
-            document.getElementById("date-submitted").innerHTML = dateSubmitted;
-            document.getElementById("date-approved").innerHTML = dateApproved;
-            document.getElementById("approved").innerHTML = approved;
-            document.getElementById("status").innerHTML = status;
+                // Variable Declarations
+                let requestId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+                let lecturerId = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer-id");
+                let lecturer = document.getElementById("ROW-" + selectedIndex).getAttribute("data-lecturer");
+                let dateSubmitted = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-submitted");
+                let dateApproved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-date-approved");
+                let approved = document.getElementById("ROW-" + selectedIndex).getAttribute("data-approved");
+                let status = document.getElementById("ROW-" + selectedIndex).getAttribute("data-status");
 
-            // Create a object using JSON.
-            let supportingDocuments = JSON.parse(request.response);
+                // Assign the elements' inner html.
+                document.getElementById("request-id").innerHTML = requestId;
+                document.getElementById("lecturer-id").innerHTML = lecturerId;
+                document.getElementById("lecturer").innerHTML = lecturer;
+                document.getElementById("date-submitted").innerHTML = dateSubmitted;
+                document.getElementById("date-approved").innerHTML = dateApproved;
+                document.getElementById("approved").innerHTML = approved;
+                document.getElementById("status").innerHTML = status;
 
-            // Check if the length of the 'supportingDocuments' object is greater than zero.
-            if (supportingDocuments.length > 0) {
-                let html = "<table style='width: 100%'>";
+                // Create a object using JSON.
+                let supportingDocuments = JSON.parse(request.response);
 
-                // Iterate through the collection.
-                for (let i = 0; i < supportingDocuments.length; i++) {
-                    html += "<tr id='_ROW-" + i + "' data-document-id='" + supportingDocuments[i].DocumentID + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
+                // Check if the length of the 'supportingDocuments' object is greater than zero.
+                if (supportingDocuments.length > 0) {
+                    let html = "<table style='width: 100%'>";
+
+                    // Iterate through the collection.
+                    for (let i = 0; i < supportingDocuments.length; i++) {
+                        html += "<tr id='_ROW-" + i + "' data-document-id='" + supportingDocuments[i].DocumentID + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
+                    }
+
+                    html += "</table>";
+
+                    // Assign the html to the element.
+                    document.getElementById("supporting-documents").innerHTML = html;
+                }
+                else {
+                    // Assign the html to the element.
+                    document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
                 }
 
-                html += "</table>";
-
-                // Assign the html to the element.
-                document.getElementById("supporting-documents").innerHTML = html;
+                setTimeout(function () {
+                    document.getElementById("btnManageAccount").disabled = false;
+                    document.getElementById("btnViewDocument").disabled = false;
+                    document.getElementById("btnDownloadDocument").disabled = false;
+                    document.getElementById("btnViewRequestInfo").disabled = false;
+                    document.getElementById("btnViewLecturerInfo").disabled = false;
+                }, 500);
             }
-            else {
-                // Assign the html to the element.
-                document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
-            }
-
-            document.getElementById("btnManageAccount").disabled = false;
-            document.getElementById("btnViewDocument").disabled = false;
-            document.getElementById("btnDownloadDocument").disabled = false;
-            document.getElementById("btnViewRequestInfo").disabled = false;
-            document.getElementById("btnViewLecturerInfo").disabled = false;
         }
 
         function ViewDocument() {

@@ -6,6 +6,7 @@
     <script src="../js/site.js"></script>
     <script type="text/javascript">
 
+        // Variable Declarations
         let queryString = window.location.search;
         let query = new URLSearchParams(queryString);
 
@@ -14,8 +15,11 @@
         let qualificationDocuments = null;
         let identityDocuments = null;
 
+        // Get data from the request.
         GET_DATA2("/UserAccount/UserAccount", [["ActionName", "GetUserAccountData"], ["LecturerID", lecturerId]], function (request) {
+            // The request status is OK.
             if (request.status == 1) {
+                // Create an object using JSON.
                 let userData = JSON.parse(request.response);
 
                 document.getElementById("lblLecturerID").innerHTML = userData.LecturerID;
@@ -27,27 +31,35 @@
                 qualificationDocuments = userData.QualificationDocuments;
                 identityDocuments = userData.IdentityDocuments;
 
+                // Iterate through the collection.
                 for (let i = 0; i < qualificationDocuments.length; i++) {
                     let html = "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 16%'>" + qualificationDocuments[i].Type + "</td><td style='width: 16%'>" + round_off_to_mb(qualificationDocuments[i].Size) + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + qualificationDocuments[i].DocumentID + ")'>Download</button>";
                     document.getElementById("qualifications").innerHTML += html;
                 }
 
+                // Iterate through the collection.
                 for (let i = 0; i < identityDocuments.length; i++) {
                     let html = "<tr><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 16%'>" + identityDocuments[i].Type + "</td><td style='width: 16%'>" + round_off_to_mb(identityDocuments[i].Size) + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + identityDocuments[i].DocumentID + ")'>Download</button>";
                     document.getElementById("identity").innerHTML += html;
                 }
+
+                document.getElementById("lblStatus").hidden = true;
             }
         });
 
         function DownloadDocument(documentId) {
+            // Get data from the request.
             GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["Section", "Request"]], function (request) {
-                let filename = request.getResponseHeader("FileName");
+                // The request status is OK.
+                if (request.status == 1) {
+                    let filename = request.getResponseHeader("FileName");
 
-                // Create a new html element that will perform the download operation.
-                let element = document.createElement("a");
-                element.href = "data:application/octet-stream;base64," + request.response;
-                element.download = filename;
-                element.click();
+                    // Create a new html element that will perform the download operation.
+                    let element = document.createElement("a");
+                    element.href = "data:application/octet-stream;base64," + request.response;
+                    element.download = filename;
+                    element.click();
+                }
             });
         }
 
@@ -55,6 +67,12 @@
 </head>
 <body>
     <div align="center">
+        <img src="../images/cmcs-logo.png" height="200" />
+        <br />
+        <br />
+
+        <span id="lblStatus"><i>Loading, please wait...</i></span>
+
         <h2>View Lecturer Information</h2>
 
         <table border="1" style="width: 500px">

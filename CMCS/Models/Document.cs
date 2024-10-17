@@ -5,7 +5,6 @@ namespace CMCS.Models
     public class Document
     {
         // Automatic Properties
-        [Key]
         public int DocumentID { get; set; }
         public string? Name { get; set; }
         public string? Type { get; set; }

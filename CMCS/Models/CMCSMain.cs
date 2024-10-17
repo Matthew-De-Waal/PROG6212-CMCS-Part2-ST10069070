@@ -24,15 +24,14 @@ namespace CMCS.Models
 
             if (documentName.ToLower().EndsWith(".pdf"))
                 type = "PDF";
-
-            if (documentName.ToLower().EndsWith(".xlsx"))
+            else if (documentName.ToLower().EndsWith(".xlsx"))
                 type = "XLSX";
-
-            if (documentName.ToLower().EndsWith(".png"))
+            else if (documentName.ToLower().EndsWith(".png"))
                 type = "PNG";
-
-            if (documentName.ToLower().EndsWith(".jpg"))
+            else if (documentName.ToLower().EndsWith(".jpg"))
                 type = "JPG";
+            else
+                type = "Unknown";
 
             return type;
         }

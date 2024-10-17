@@ -38,6 +38,30 @@ function IsStrongPassword(password) {
     return result;
 }
 
+// This method gets the document type.
+function getDocumentType(filename) {
+    let documentType = EMPTY_STRING;
+
+    if (filename.toLowerCase().endsWith(".pdf")) {
+        documentType = "PDF";
+    }
+    else if (filename.toLowerCase().endsWith(".xlsx")) {
+        documentType = "XLSX";
+    }
+    else if (filename.toLowerCase().endsWith(".png")) {
+        documentType = "PNG";
+    }
+    else if (filename.toLowerCase().endsWith(".jpg")) {
+        documentType = "JPG";
+    }
+    else {
+        documentType = "Unknown";
+    }
+
+    return documentType;
+}
+
+// Post data
 function POST_DATA(url, data, e) {
     let request = new XMLHttpRequest();
     request.open("POST", url, true);
@@ -50,6 +74,7 @@ function POST_DATA(url, data, e) {
     }
 }
 
+// Post data
 function POST_DATA2(url, data, header, e) {
     let request = new XMLHttpRequest();
     request.open("POST", url, true);
@@ -69,7 +94,7 @@ function POST_DATA2(url, data, header, e) {
     }
 }
 
-
+// Get data
 function GET_DATA(url, header, e) {
     let request = new XMLHttpRequest();
     request.open("GET", url, true);
@@ -89,6 +114,7 @@ function GET_DATA(url, header, e) {
     }
 }
 
+// Get data
 function GET_DATA2(url, header, e) {
     let request = new XMLHttpRequest();
     request.open("GET", url, true);
@@ -108,6 +134,7 @@ function GET_DATA2(url, header, e) {
     }
 }
 
+// Deletes an item in an array by a given index.
 function delete_item(array, index) {
     let list = [];
 
@@ -122,6 +149,7 @@ function delete_item(array, index) {
     return list;
 }
 
+// Rounds off a number to megabytes.
 function round_off_to_mb(value) {
     return (value / 1000000).toFixed(2);
 }

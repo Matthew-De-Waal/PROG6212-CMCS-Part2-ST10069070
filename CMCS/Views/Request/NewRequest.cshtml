@@ -67,10 +67,10 @@
 
                 for (let i = 0; i < documents.length; i++) {
                     if (i == selectedIndex) {
-                        html += "<tr style='background-color: rgba(255, 0, 0, 0.4);' onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
+                        html += "<tr style='background-color: rgba(255, 0, 0, 0.4);' onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + getDocumentType(documents[i].name) + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
                     }
                     else {
-                        html += "<tr onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
+                        html += "<tr onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + getDocumentType(documents[i].name) + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
                     }
                 }
 
@@ -297,7 +297,6 @@
         }
 
         function RequestUpdated(status) {
-            // Stop the interval.
             document.getElementById("main-screen").style.position = "relative";
             document.getElementById("main-footer").style.position = EMPTY_STRING;
             document.getElementById("loading-screen").hidden = true;
@@ -361,7 +360,7 @@
         </table>
 
         <br />
-        <p align="left"><b>Supporting Documents (Size Limit: 10 MB)</b></p>
+        <p align="left"><b>Supporting Documents (Size Limit: 2 MB)</b></p>
 
         <div style="background-color: white">
             <table style="width: 600px">

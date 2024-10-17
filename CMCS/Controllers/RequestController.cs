@@ -17,8 +17,13 @@ namespace CMCS.Controllers
 {
     public class RequestController : Controller
     {
+        // Data fields
         private readonly AppDbContext _context;
 
+        /// <summary>
+        /// Master constructor
+        /// </summary>
+        /// <param name="context"></param>
         public RequestController(AppDbContext context)
         {
             _context = context;

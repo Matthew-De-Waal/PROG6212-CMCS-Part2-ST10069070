@@ -25,6 +25,11 @@
 
         document.getElementById("btnUpdateAccount").disabled = true;
 
+        document.getElementById("main-screen").style.position = "absolute";
+        document.getElementById("main-footer").style.position = "fixed";
+        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+        document.getElementById("loading-screen").hidden = false;
+
         // Get data from the request.
         GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetUserAccountData"]], function(status, response) {
             // Check if the status is OK.
@@ -64,6 +69,10 @@
                 }
 
                 document.getElementById("btnUpdateAccount").disabled = false;
+
+                document.getElementById("main-screen").style.position = "relative";
+                document.getElementById("main-footer").style.position = EMPTY_STRING;
+                document.getElementById("loading-screen").hidden = true;
             }
         });
 

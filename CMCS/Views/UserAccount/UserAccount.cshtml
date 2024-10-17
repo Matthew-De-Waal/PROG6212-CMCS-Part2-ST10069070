@@ -77,7 +77,12 @@
                                 html += "<td class='table-cell-class' style='width: 46%'>" + supportingDocuments[i].Name + "</td>";
                                 html += "<td class='table-cell-class' style='width: 18%'>" + round_off_to_mb(supportingDocuments[i].Size) + "</td>";
                                 html += "<td class='table-cell-class' style='width: 18%'>" + supportingDocuments[i].Type + "</td>";
-                                html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='ViewDocument(" + supportingDocuments[i].DocumentID + ")'>View</button><br /><div style='height: 8px'></div><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
+
+                                if(supportingDocuments[i].Type != "Unknown")
+                                    html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='ViewDocument(" + supportingDocuments[i].DocumentID + ")'>View</button><br /><div style='height: 8px'></div><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
+                                else
+                                    html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
+
                                 html += "</tr>";
                             }
 
@@ -288,7 +293,7 @@
                         <br />
 
                         <div style="background-color: white">
-                            <table style="width: 100%">
+                            <table style="width: 100%; height: 100vh">
                                 <tr>
                                     <td id="tbl-cell1" align="center" style="width: 65%; vertical-align: top">
                                         <div style="background-color: white">

@@ -16,15 +16,21 @@
     <script src="../js/site.js"></script>
     <script type="text/javascript">
 
+        // Variable Declarations
         let queryString = window.location.search;
         let query = new URLSearchParams(queryString);
         let documentId = query.get("DocumentID");
 
+        // Get data from the request.
         GET_DATA("/UserAccount/UserAccount", [["ActionName", "GetDocumentContent2"], ["DocumentID", documentId]], function (status, response) {
-            document.getElementById("document-display").src = "data:application/pdf;base64," + response;
+            // The status is OK.
+            if (status == 1) {
+                document.getElementById("document-display").src = "data:application/pdf;base64," + response;
+            }
         });
 
         function document_onresize() {
+            // Resize the document-display to fit the whole screen.
             let documentDisplay = document.getElementById("document-display");
             documentDisplay.style.width = window.innerWidth + "px";
             documentDisplay.style.height = window.innerHeight + "px";
