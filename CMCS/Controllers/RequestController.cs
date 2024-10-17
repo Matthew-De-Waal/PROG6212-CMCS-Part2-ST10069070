@@ -108,13 +108,17 @@ namespace CMCS.Controllers
 
                 if (this.Request.Headers["ActionName"] == "GetRequestID")
                     ManageRequests_GetRequestID();
+
+                if(!this.Request.Headers.ContainsKey("ActionName"))
+                {
+                    return GET_ManageRequests();
+                }
             }
 
-            var view = GET_ManageRequests();
             // Close the database connection.
             CMCSDB.CloseConnection();
 
-            return view;
+            return View(new List<Request>());
         }
 
         /// <summary>
@@ -745,21 +749,24 @@ namespace CMCS.Controllers
                 // Declare and instantiate a List<CMCSDocument> object.
                 List<Document> documentList = new List<Document>();
 
-                // Iterate through the collection.
-                for (int i = 0; i < row_count; i++)
+                if (reader != null)
                 {
-                    // Read data from the SqlDataReader? object.
-                    reader.Read();
+                    // Iterate through the collection.
+                    for (int i = 0; i < row_count; i++)
+                    {
+                        // Read data from the SqlDataReader? object.
+                        reader.Read();
 
-                    var document = new Document();
-                    document.DocumentID = Convert.ToInt32(reader["DocumentID"]);
-                    document.Name = reader["Name"].ToString();
-                    document.Size = Convert.ToInt32(reader["Size"]);
-                    document.Type = reader["Type"].ToString();
-                    document.Section = reader["Section"].ToString();
-                    document.Content = reader["Content"].ToString();
+                        var document = new Document();
+                        document.DocumentID = Convert.ToInt32(reader["DocumentID"]);
+                        document.Name = reader["Name"].ToString();
+                        document.Size = Convert.ToInt32(reader["Size"]);
+                        document.Type = reader["Type"].ToString();
+                        document.Section = reader["Section"].ToString();
+                        document.Content = reader["Content"].ToString();
 
-                    documentList.Add(document);
+                        documentList.Add(document);
+                    }
                 }
 
                 // Close the SqlDataReader? object.

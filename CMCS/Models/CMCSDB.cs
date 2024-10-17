@@ -51,7 +51,7 @@ namespace CMCS.Models
             if (!readerOpened)
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-                sqlCmd.ExecuteNonQuery();
+                sqlCmd.ExecuteNonQueryAsync();
             }
         }
 
@@ -69,11 +69,12 @@ namespace CMCS.Models
 
                 try
                 {
-                    sqlDataReader = sqlCmd.ExecuteReader();
+                    sqlDataReader = sqlCmd.ExecuteReaderAsync().Result;
                 }
                 catch
                 {
-                    Thread.Sleep(500);
+                    readerOpened = false;
+
                     return null;
                 }
 
@@ -95,7 +96,7 @@ namespace CMCS.Models
             if (!readerOpened)
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-                return sqlCmd.ExecuteScalar();
+                return sqlCmd.ExecuteScalarAsync().Result;
             }
             else
             {
@@ -107,10 +108,11 @@ namespace CMCS.Models
         {
             if(sqlDataReader != null && readerOpened)
             {
-                readerOpened = false;
-                sqlDataReader?.Close();
+                sqlDataReader?.CloseAsync();
                 sqlDataReader = null;
             }
+
+            readerOpened = false;
         }
 
         /// <summary>
