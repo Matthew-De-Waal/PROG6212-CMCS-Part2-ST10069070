@@ -22,7 +22,7 @@
                 // Create an object using JSON.
                 let userData = JSON.parse(request.response);
 
-                document.getElementById("lblLecturerID").innerHTML = userData.LecturerID;
+                document.getElementById("lblLecturerID").innerHTML = lecturerId;
                 document.getElementById("lblFirstName").innerHTML = userData.FirstName;
                 document.getElementById("lblLastName").innerHTML = userData.LastName;
                 document.getElementById("lblEmailAddress").innerHTML = userData.EmailAddress;
@@ -49,7 +49,7 @@
 
         function DownloadDocument(documentId) {
             // Get data from the request.
-            GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["Section", "Request"]], function (request) {
+            GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent2"], ["DocumentID", documentId]], function (request) {
                 // The request status is OK.
                 if (request.status == 1) {
                     let filename = request.getResponseHeader("FileName");

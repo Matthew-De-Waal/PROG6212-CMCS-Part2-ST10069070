@@ -122,7 +122,7 @@
             // Iterate through the 'uploadedQualificationDocuments' collection.
             for(let i = 0; i < uploadedQualificationDocuments.length; i++)
             {
-                qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedQualificationDocuments[i].size) + "</td></tr>";
+                qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + getDocumentType(uploadedQualificationDocuments[i].name) + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedQualificationDocuments[i].size) + "</td></tr>";
             }
 
             // Iterate through the 'identityDocuments' collection.
@@ -132,7 +132,7 @@
 
             // Iterate through the 'uploadedIdentityDocuments' collection.
             for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
-                identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedIdentityDocuments[i].size) + "</td></tr>";
+                identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + getDocumentType(uploadedIdentityDocuments[i].name) + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedIdentityDocuments[i].size) + "</td></tr>";
             }
 
             qualificationHtml += "</table>";
@@ -306,6 +306,7 @@
 
                 // Iterate through the 'uploadedQualificationDocuments' collection.
                 for (let i = 0; i < uploadedQualificationDocuments.length; i++) {
+                    qualification_documents[i] = new Object();
                     qualification_documents[i].Name = uploadedQualificationDocuments[i].name;
                     qualification_documents[i].Size = uploadedQualificationDocuments[i].size;
 
@@ -322,6 +323,7 @@
 
                 // Iterate through the 'uploadedIdentityDocuments' collection.
                 for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
+                    identity_documents[i] = new Object();
                     identity_documents[i].Name = uploadedIdentityDocuments[i].name;
                     identity_documents[i].Size = uploadedIdentityDocuments[i].size;
 

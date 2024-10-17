@@ -78,7 +78,7 @@
                                 html += "<td class='table-cell-class' style='width: 18%'>" + round_off_to_mb(supportingDocuments[i].Size) + "</td>";
                                 html += "<td class='table-cell-class' style='width: 18%'>" + supportingDocuments[i].Type + "</td>";
 
-                                if(supportingDocuments[i].Type != "Unknown")
+                                if (supportingDocuments[i].Type != "Unknown")
                                     html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='ViewDocument(" + supportingDocuments[i].DocumentID + ")'>View</button><br /><div style='height: 8px'></div><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
                                 else
                                     html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
@@ -222,7 +222,7 @@
                 // Create a new html element that will perform the download operation.
                 let element = document.createElement("a");
                 element.href = "data:application/octet-stream;base64," + btoa(request.response);
-                element.download = "LOG-" + request.getResponseHeader("FileName") + ".txt";
+                element.download = request.getResponseHeader("FileName");
                 // Perform a click operation.
                 element.click();
             });
@@ -278,119 +278,118 @@
 }
 
 @{
+    <div align="center">
+        <div style="height: 1rem"></div>
+        <div>
+            <button class="button-class button-class-wide" onclick="window.location = '/Request/NewRequest?ActionName=NewRequest'"><img src="~/images/new-icon.png" height="24" />New Request</button>
+            <button class="button-class button-class-wide" onclick="EditRequest()"><img src="~/images/edit-icon.png" height="24" />Edit Request</button>
+            <button class="button-class button-class-wide" onclick="TrackRequest()"><img src="~/images/track-icon.png" height="24" />Track Request</button>
+            <button class="button-class button-class-wide" onclick="window.location.reload()"><img src="~/images/refresh-icon.png" height="24" />Refresh Request(s)</button>
+            <button class="button-class button-class-wide" onclick="CancelRequest()"><img src="~/images/cancel-icon.png" height="24" />Cancel Request(s)</button>
+            <button class="button-class button-class-wide" onclick="ExportLog()"><img src="~/images/export-icon.png" height="24" />Export Log</button>
+            <button class="button-class button-class-wide" onclick="ManageAccount()"><img src="~/images/account-icon.png" height="24" />Manage Account</button>
+        </div>
+        <br />
 
-                    <div align="center">
-                        <div style="height: 1rem"></div>
-                        <div>
-                            <button class="button-class button-class-wide" onclick="window.location = '/Request/NewRequest?ActionName=NewRequest'"><img src="~/images/new-icon.png" height="24" />New Request</button>
-                            <button class="button-class button-class-wide" onclick="EditRequest()"><img src="~/images/edit-icon.png" height="24" />Edit Request</button>
-                            <button class="button-class button-class-wide" onclick="TrackRequest()"><img src="~/images/track-icon.png" height="24" />Track Request</button>
-                            <button class="button-class button-class-wide" onclick="window.location.reload()"><img src="~/images/refresh-icon.png" height="24" />Refresh Request(s)</button>
-                            <button class="button-class button-class-wide" onclick="CancelRequest()"><img src="~/images/cancel-icon.png" height="24" />Cancel Request(s)</button>
-                            <button class="button-class button-class-wide" onclick="ExportLog()"><img src="~/images/export-icon.png" height="24" />Export Log</button>
-                            <button class="button-class button-class-wide" onclick="ManageAccount()"><img src="~/images/account-icon.png" height="24" />Manage Account</button>
-                        </div>
-                        <br />
-
+        <div style="background-color: white">
+            <table style="width: 100%; height: 100vh">
+                <tr>
+                    <td id="tbl-cell1" align="center" style="width: 65%; vertical-align: top">
                         <div style="background-color: white">
-                            <table style="width: 100%; height: 100vh">
-                                <tr>
-                                    <td id="tbl-cell1" align="center" style="width: 65%; vertical-align: top">
-                                        <div style="background-color: white">
-                                            <div style="background-color: #304c80">
-                                                <br />
-                                                <table cellpadding="16" class="request-display" style="width: 100%">
-                                                    <tr>
-                                                        <th class="table-cell-class" style="width: 10%">Request ID</th>
-                                                        <th class="table-cell-class" style="width: 20%">Request Name</th>
-                                                        <th class="table-cell-class" style="width: 30%">Description</th>
-                                                        <th class="table-cell-class" style="width: 10%">Request Approved</th>
-                                                        <th class="table-cell-class" style="width: 10%">Status</th>
-                                                        <th class="table-cell-class" style="width: 10%">Date Submitted</th>
-                                                        <th class="table-cell-class" style="width: 10%">Date Approved</th>
-                                                    </tr>
+                            <div style="background-color: #304c80">
+                                <br />
+                                <table cellpadding="16" class="request-display" style="width: 100%">
+                                    <tr>
+                                        <th class="table-cell-class" style="width: 10%">Request ID</th>
+                                        <th class="table-cell-class" style="width: 20%">Request Name</th>
+                                        <th class="table-cell-class" style="width: 30%">Description</th>
+                                        <th class="table-cell-class" style="width: 10%">Request Approved</th>
+                                        <th class="table-cell-class" style="width: 10%">Status</th>
+                                        <th class="table-cell-class" style="width: 10%">Date Submitted</th>
+                                        <th class="table-cell-class" style="width: 10%">Date Approved</th>
+                                    </tr>
 
-                                                    <!-- This is where the claims will be displayed -->
-                                                </table>
-                                                <br />
-                                            </div>
+                                    <!-- This is where the claims will be displayed -->
+                                </table>
+                                <br />
+                            </div>
 
-                                            @{
+                            @{
                                 if (this.Model.Count > 0)
                                 {
-                                                    <div style="width: 100%; height: 90vh; overflow-y: scroll">
-                                                                    <table style="width: 100%">
+                                    <div style="width: 100%; height: 90vh; overflow-y: scroll">
+                                        <table style="width: 100%">
 
-                                                                        @{
-                                            int count = 0;
+                                            @{
+                                                int count = 0;
 
-                                            // Iterate through the collection.
-                                            foreach (Request request in this.Model)
-                                            {
-                                                var requestApproved = string.Empty;
-                                                string sDateSubmitted = request.DateSubmitted.HasValue ? request.DateSubmitted.Value.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;
-                                                string sDateApproved = request.DateApproved.HasValue ? request.DateApproved.Value.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;
+                                                // Iterate through the collection.
+                                                foreach (Request request in this.Model)
+                                                {
+                                                    var requestApproved = string.Empty;
+                                                    string sDateSubmitted = request.DateSubmitted.HasValue ? request.DateSubmitted.Value.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;
+                                                    string sDateApproved = request.DateApproved.HasValue ? request.DateApproved.Value.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;
 
-                                                // Check if the request status is 'Approved'.
-                                                if (request.RequestStatus == "Approved")
-                                                    requestApproved = "Yes";
+                                                    // Check if the request status is 'Approved'.
+                                                    if (request.RequestStatus == "Approved")
+                                                        requestApproved = "Yes";
 
-                                                // Check if the request status is 'Rejected'.
-                                                if (request.RequestStatus == "Rejected")
-                                                    requestApproved = "No";
+                                                    // Check if the request status is 'Rejected'.
+                                                    if (request.RequestStatus == "Rejected")
+                                                        requestApproved = "No";
 
-                                                // Check if the request status is 'Pending'.
-                                                if (request.RequestStatus == "Pending")
-                                                    requestApproved = "No";
+                                                    // Check if the request status is 'Pending'.
+                                                    if (request.RequestStatus == "Pending")
+                                                        requestApproved = "No";
 
-                                                                                                <tr id="ROW-@count" style="height: 64px; color: black" onclick="request_selected(@count)">
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestID</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 20%">@request.RequestFor</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 30%">@request.Description</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@requestApproved</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestStatus</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateSubmitted</td>
-                                                                                                    <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateApproved</td>
-                                                                                                </tr>
+                                                    <tr id="ROW-@count" style="height: 64px; color: black" onclick="request_selected(@count)">
+                                                        <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestID</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 20%">@request.RequestFor</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 30%">@request.Description</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 10%">@requestApproved</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 10%">@request.RequestStatus</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateSubmitted</td>
+                                                        <td class="table-cell-class table-cell-class2" style="width: 10%">@sDateApproved</td>
+                                                    </tr>
 
-                                                count++;
+                                                    count++;
+                                                }
                                             }
-                                                                        }
 
-                                                                    </table>
-                                                                    </div>
+                                        </table>
+                                    </div>
 
                                 }
                                 else
                                 {
                                     <br />
-                                                                    <b>No request(s) found</b>
+                                    <b>No request(s) found</b>
                                 }
-                                            }
-                                        </div>
-                                    </td>
-                                    <td onclick="toggle_full_table_view()" style="width: 1%; height: 100%; background-color: #304c80"></td>
-                                    <td id="tbl-cell2" align="center" style="vertical-align: top; width: 34%">
-                                        <div style="background-color: white">
-                                            <div align="left"><b>Supporting Document(s)</b></div>
-                                            <table cellpadding="16" class="request-display" style="width: 100%">
-                                                <tr style="background-color: #304c80">
-                                                    <th class="table-cell-class" style="width: 46%">Document Name</th>
-                                                    <th class="table-cell-class" style="width: 18%">Size (MB)</th>
-                                                    <th class="table-cell-class" style="width: 18%">Type</th>
-                                                    <th class="table-cell-class" style="width: 18%">Action</th>
-                                                </tr>
-                                            </table>
-
-                                            <div id="tblDocuments" style="height: 100vh; overflow-y: scroll">
-                                                <br />
-                                                <b>No document(s) found</b>
-                                            </div>
-
-                                        </div>
-                                    </td>
+                            }
+                        </div>
+                    </td>
+                    <td onclick="toggle_full_table_view()" style="width: 1%; height: 100%; background-color: #304c80"></td>
+                    <td id="tbl-cell2" align="center" style="vertical-align: top; width: 34%">
+                        <div style="background-color: white">
+                            <div align="left"><b>Supporting Document(s)</b></div>
+                            <table cellpadding="16" class="request-display" style="width: 100%">
+                                <tr style="background-color: #304c80">
+                                    <th class="table-cell-class" style="width: 46%">Document Name</th>
+                                    <th class="table-cell-class" style="width: 18%">Size (MB)</th>
+                                    <th class="table-cell-class" style="width: 18%">Type</th>
+                                    <th class="table-cell-class" style="width: 18%">Action</th>
                                 </tr>
                             </table>
+
+                            <div id="tblDocuments" style="height: 100vh; overflow-y: scroll">
+                                <br />
+                                <b>No document(s) found</b>
+                            </div>
+
                         </div>
-                    </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 }

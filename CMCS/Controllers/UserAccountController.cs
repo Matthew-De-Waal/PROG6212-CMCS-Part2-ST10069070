@@ -557,7 +557,7 @@ namespace CMCS.Controllers
                 }
 
                 // Insert the uploaded identity documents.
-                for (int i = 0; i < qualificationDocuments.Count; i++)
+                for (int i = 0; i < identityDocuments.Count; i++)
                 {
                     string documentName = Convert.ToString(identityDocuments[i].Name);
                     long documentSize = Convert.ToInt64(identityDocuments[i].Size);
@@ -965,7 +965,17 @@ namespace CMCS.Controllers
                 CMCSDB.CloseReader();
             }
 
-            string sql2 = $"SELECT * FROM Document WHERE UserID = '{CMCSMain.User.IdentityNumber}'";
+            string? sql2 = string.Empty;
+
+            if (currentUser)
+            {
+                sql2 = $"SELECT * FROM Document WHERE UserID = '{CMCSMain.User.IdentityNumber}'";
+            }
+            else
+            {
+                sql2 = $"SELECT * FROM Document d INNER JOIN Lecturer l ON l.IdentityNumber = d.UserID WHERE l.LecturerID = {this.Request.Headers["LecturerID"]}";
+            }
+
             reader = CMCSDB.RunSQLResult(sql2);
 
             // Generic collections.
@@ -1087,7 +1097,7 @@ namespace CMCS.Controllers
         {
             // Get the user id from the request header 'UserID'.
             string? userId = this.Request.Headers["UserID"];
-            var result = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == userId).ToList();
+            var result = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == userId).ToListAsync().Result;
 
             if(result.Count > 0)
             {

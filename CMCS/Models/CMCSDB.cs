@@ -52,6 +52,7 @@ namespace CMCS.Models
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
                 sqlCmd.ExecuteNonQueryAsync();
+                Thread.Sleep(500);
             }
         }
 
@@ -96,7 +97,10 @@ namespace CMCS.Models
             if (!readerOpened)
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-                return sqlCmd.ExecuteScalarAsync().Result;
+                object? result = sqlCmd.ExecuteScalarAsync().Result;
+                Thread.Sleep(500);
+
+                return result;
             }
             else
             {
