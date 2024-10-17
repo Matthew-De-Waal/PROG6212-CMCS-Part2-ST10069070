@@ -48,8 +48,11 @@ namespace CMCS.Models
         /// <param name="sql">The SQL query to be executed.</param>
         public static void RunSQLNoResult(string sql)
         {
-            SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-            sqlCmd.ExecuteNonQuery();
+            if (!readerOpened)
+            {
+                SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
+                sqlCmd.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
@@ -87,10 +90,17 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns>The output from the SQL query.</returns>
-        public static object RunSQLResultScalar(string sql)
+        public static object? RunSQLResultScalar(string sql)
         {
-            SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-            return sqlCmd.ExecuteScalar();
+            if (!readerOpened)
+            {
+                SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
+                return sqlCmd.ExecuteScalar();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static void CloseReader()
