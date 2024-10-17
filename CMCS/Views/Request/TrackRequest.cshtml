@@ -14,7 +14,7 @@
 
         // Open the database connection.
         CMCSDB.OpenConnection();
-        // Declare and instantiate a SqlDataReader object.
+        // Declare and instantiate a SqlDataReader? object.
         var reader = CMCSDB.RunSQLResult(sql);
         // Read data
         reader.Read();
@@ -22,8 +22,8 @@
         dateSubmitted = DateTime.Parse(reader["DateSubmitted"].ToString()).ToString("yyyy/MM/dd HH:mm:ss");
         status = reader["RequestStatus"].ToString();
 
-        // Close the SqlDataReader object.
-        reader.Close();
+        // Close the SqlDataReader? object.
+        CMCSDB.CloseReader();
 
         string sql3 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestID}";
         reader = CMCSDB.RunSQLResult(sql3);
@@ -34,8 +34,8 @@
             // Read data
             reader.Read();
             int managerID = Convert.ToInt32(reader["ManagerID"].ToString());
-            // Close the SqlDataReader object.
-            reader.Close();
+            // Close the SqlDataReader? object.
+            CMCSDB.CloseReader();
 
             string sql2 = $"SELECT FirstName, LastName FROM Manager WHERE ManagerID = {managerID}";
             reader = CMCSDB.RunSQLResult(sql2);
@@ -45,8 +45,8 @@
             approvedBy = $"{reader["FirstName"]} {reader["LastName"]}";
         }
 
-        // Close the SqlDataReader object.
-        reader.Close();
+        // Close the SqlDataReader? object.
+        CMCSDB.CloseReader();
         // Close the database connection.
         CMCSDB.CloseConnection();
     }

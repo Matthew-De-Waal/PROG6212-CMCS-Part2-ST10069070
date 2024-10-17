@@ -41,6 +41,13 @@
 
             if (selectedIndex != -1) {
                 selectedRequestID = document.getElementById("ROW-" + selectedIndex).getAttribute("data-request-id");
+
+                document.getElementById("btnManageAccount").disabled = true;
+                document.getElementById("btnViewDocument").disabled = true;
+                document.getElementById("btnDownloadDocument").disabled = true;
+                document.getElementById("btnViewRequestInfo").disabled = true;
+                document.getElementById("btnViewLecturerInfo").disabled = true;
+
                 // Get data from the request.
                 GET_DATA2("/Request/ManageRequests", [["ActionName", "GetRequestData"], ["RequestID", selectedRequestID]], RequestSelected);
             }
@@ -125,7 +132,7 @@
 
                 // Iterate through the collection.
                 for (let i = 0; i < supportingDocuments.length; i++) {
-                    html += "<tr id='_ROW-" + i + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
+                    html += "<tr id='_ROW-" + i + "' data-document-id='" + supportingDocuments[i].DocumentID + "' onclick='row_selected2(" + i + ")'><td style='width: 50%'>" + supportingDocuments[i].Name + "</td><td style='width: 25%'>" + supportingDocuments[i].Type + "</td><td style='width: 25%'>" + supportingDocuments[i].Size + "</td></tr>";
                 }
 
                 html += "</table>";
@@ -136,6 +143,23 @@
             else {
                 // Assign the html to the element.
                 document.getElementById("supporting-documents").innerHTML = "<br /><p align='center' style='margin: 0px'><b>Nothing found</b></p><br />";
+            }
+
+            document.getElementById("btnManageAccount").disabled = false;
+            document.getElementById("btnViewDocument").disabled = false;
+            document.getElementById("btnDownloadDocument").disabled = false;
+            document.getElementById("btnViewRequestInfo").disabled = false;
+            document.getElementById("btnViewLecturerInfo").disabled = false;
+        }
+
+        function ViewDocument() {
+            if (selectedIndex2 != -1) {
+                let documentId = document.getElementById("_ROW-" + selectedIndex2).getAttribute("data-document-id");
+                window.open("../html/ViewDocument.html?DocumentID=" + documentId, "ViewDocument", "width=600,height=720");
+            }
+            else {
+                // Show notification dialog.
+                alert("Please select a document to view.");
             }
         }
 
@@ -208,7 +232,7 @@
                         <h3 align="left">Manage Requests</h3>
                     </td>
                     <td align="right">
-                        <button class="button-class button-class-small button-class-auto-wide" onclick="window.location = '/UserAccount/UpdateUserProfile?Role=Manager'">Manage Your Account</button>
+                        <button id="btnManageAccount" class="button-class button-class-small button-class-auto-wide" onclick="window.location = '/UserAccount/UpdateUserProfile?Role=Manager'">Manage Your Account</button>
                     </td>
                 </tr>
             </table>
@@ -314,9 +338,9 @@
                         </tr>
                     </table>
                     <br />
-                    <button class="button-class button-class-small2 button-class-auto-wide" onclick="ViewRequestInfo()">View Request Info</button>
+                    <button id="btnViewRequestInfo" class="button-class button-class-small2 button-class-auto-wide" onclick="ViewRequestInfo()">View Request Info</button>
                     <div style="height: 0.5rem"></div>
-                    <button class="button-class button-class-small2 button-class-auto-wide" onclick="ViewLecturerInfo()">View Lecturer Info</button>
+                    <button id="btnViewLecturerInfo" class="button-class button-class-small2 button-class-auto-wide" onclick="ViewLecturerInfo()">View Lecturer Info</button>
                 </div>
             </td>
             <td style="width: 45%; vertical-align: top;">
@@ -347,7 +371,8 @@
                     </div>
 
                     <div align="right">
-                        <button class="button-class button-class-small2" onclick="DownloadDocument()">Download</button>
+                        <button id="btnViewDocument" class="button-class button-class-small2" onclick="ViewDocument()">View</button>
+                        <button id="btnDownloadDocument" class="button-class button-class-small2" onclick="DownloadDocument()">Download</button>
                     </div>
                 </div>
             </td>
@@ -360,8 +385,8 @@
     <div>
         <br />
         <b>Action: &nbsp;&nbsp;</b>
-        <button class="button-class button-class-small" onclick="AcceptRequest()">Accept</button>
-        <button class="button-class button-class-small" onclick="RejectRequest()">Reject</button>
+        <button id="btnAccept" class="button-class button-class-small" onclick="AcceptRequest()">Accept</button>
+        <button id="btnReject" class="button-class button-class-small" onclick="RejectRequest()">Reject</button>
     </div>
 
 </div>

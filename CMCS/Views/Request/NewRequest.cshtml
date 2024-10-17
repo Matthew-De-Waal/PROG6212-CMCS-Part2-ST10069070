@@ -66,10 +66,10 @@
 
                 for (let i = 0; i < documents.length; i++) {
                     if (i == selectedIndex) {
-                        html += "<tr style='background-color: rgba(255, 0, 0, 0.4);' onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + documents[i].size + "</td></tr>";
+                        html += "<tr style='background-color: rgba(255, 0, 0, 0.4);' onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
                     }
                     else {
-                        html += "<tr onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + documents[i].size + "</td></tr>";
+                        html += "<tr onclick='row_selected(" + i + ")'><td style='width: 50%'>" + documents[i].name + "</td><td style='width: 25%'>" + documents[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(documents[i].size) + "</td></tr>";
                     }
                 }
 

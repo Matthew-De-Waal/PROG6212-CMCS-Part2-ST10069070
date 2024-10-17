@@ -23,6 +23,8 @@
         let query = new URLSearchParams(queryString);
         let role = query.get("Role");
 
+        document.getElementById("btnUpdateAccount").disabled = true;
+
         // Get data from the request.
         GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetUserAccountData"]], function(status, response) {
             // Check if the status is OK.
@@ -60,6 +62,8 @@
                     document.getElementById("txtQuestion").value = securityQuestion;
                     document.getElementById("txtAnswer").value = answer;
                 }
+
+                document.getElementById("btnUpdateAccount").disabled = false;
             }
         });
 
@@ -103,23 +107,23 @@
 
             // Iterate through the 'qualificationDocuments' collection.
             for (let i = 0; i < qualificationDocuments.length; i++) {
-                qualificationHtml += "<tr id='_1_ROW-" + i + "' onclick='qualification_selected(" + i + ")'><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + qualificationDocuments[i].Size + "</td></tr>";
+                qualificationHtml += "<tr id='_1_ROW-" + i + "' onclick='qualification_selected(" + i + ")'><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 25%'>" + qualificationDocuments[i].Type + "</td><td style='width: 25%'>" + round_off_to_mb(qualificationDocuments[i].Size) + "</td></tr>";
             }
 
             // Iterate through the 'uploadedQualificationDocuments' collection.
             for(let i = 0; i < uploadedQualificationDocuments.length; i++)
             {
-                qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].type + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].size + "</td></tr>";
+                qualificationHtml += "<tr id='_1_ROW-" + (i + qualificationDocuments.length) + "' onclick='qualification_selected(" + (i + qualificationDocuments.length) + ")'><td style='width: 50%'>" + uploadedQualificationDocuments[i].name + "</td><td style='width: 25%'>" + uploadedQualificationDocuments[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedQualificationDocuments[i].size) + "</td></tr>";
             }
 
             // Iterate through the 'identityDocuments' collection.
             for (let i = 0; i < identityDocuments.length; i++) {
-                identityHtml += "<tr id='_2_ROW-" + i + "' onclick='identity_selected(" + i + ")'><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + identityDocuments[i].Size + "</td></tr>";
+                identityHtml += "<tr id='_2_ROW-" + i + "' onclick='identity_selected(" + i + ")'><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 25%'>" + identityDocuments[i].Type + "</td><td style='width: 25%'>" + round_off_to_mb(identityDocuments[i].Size) + "</td></tr>";
             }
 
             // Iterate through the 'uploadedIdentityDocuments' collection.
             for (let i = 0; i < uploadedIdentityDocuments.length; i++) {
-                identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].type + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].size + "</td></tr>";
+                identityHtml += "<tr id='_2_ROW-" + (i + identityDocuments.length) + "' onclick='identity_selected(" + (i + identityDocuments.length) + ")'><td style='width: 50%'>" + uploadedIdentityDocuments[i].name + "</td><td style='width: 25%'>" + uploadedIdentityDocuments[i].type + "</td><td style='width: 25%'>" + round_off_to_mb(uploadedIdentityDocuments[i].size) + "</td></tr>";
             }
 
             qualificationHtml += "</table>";
@@ -544,7 +548,7 @@
         <br />
 
         <div align="right" style="width: 600px">
-            <button class="button-class button-class-small" onclick="UpdateAccount()">Update</button>
+            <button id="btnUpdateAccount" class="button-class button-class-small" onclick="UpdateAccount()">Update</button>
             <button class="button-class button-class-small" onclick="CancelUpdate()">Cancel</button>
         </div>
     </div>

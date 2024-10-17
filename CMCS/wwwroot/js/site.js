@@ -122,3 +122,7 @@ function delete_item(array, index) {
 
     return list;
 }
+
+function round_off_to_mb(value) {
+    return (value / 1000000).toFixed(2);
+}

@@ -48,11 +48,11 @@ namespace CMCS.Models
 
             var reader1 = CMCSDB.RunSQLResult($"SELECT * FROM Lecturer WHERE IdentityNumber = '{userId}'");
             bool reader1Result = reader1.HasRows;
-            reader1.Close();
+            CMCSDB.CloseReader();
 
             var reader2 = CMCSDB.RunSQLResult($"SELECT * FROM Manager WHERE IdentityNumber = '{userId}'");
             bool reader2Result = reader2.HasRows;
-            reader2.Close();
+            CMCSDB.CloseReader();
 
             result = reader1Result || reader2Result;
 

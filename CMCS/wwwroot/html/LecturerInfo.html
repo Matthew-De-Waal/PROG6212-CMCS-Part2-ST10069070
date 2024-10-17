@@ -28,14 +28,19 @@
                 identityDocuments = userData.IdentityDocuments;
 
                 for (let i = 0; i < qualificationDocuments.length; i++) {
-                    let html = "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 16%'>" + qualificationDocuments[i].Type + "</td><td style='width: 16%'>" + qualificationDocuments[i].Size + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + qualificationDocuments[i].DocumentID + ")'>Download</button>";
+                    let html = "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 16%'>" + qualificationDocuments[i].Type + "</td><td style='width: 16%'>" + round_off_to_mb(qualificationDocuments[i].Size) + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + qualificationDocuments[i].DocumentID + ")'>Download</button>";
                     document.getElementById("qualifications").innerHTML += html;
+                }
+
+                for (let i = 0; i < identityDocuments.length; i++) {
+                    let html = "<tr><td style='width: 50%'>" + identityDocuments[i].Name + "</td><td style='width: 16%'>" + identityDocuments[i].Type + "</td><td style='width: 16%'>" + round_off_to_mb(identityDocuments[i].Size) + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + identityDocuments[i].DocumentID + ")'>Download</button>";
+                    document.getElementById("identity").innerHTML += html;
                 }
             }
         });
 
         function DownloadDocument(documentId) {
-            GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["Section", "UserProfile"], ["DocumentID", documentId]], function (request) {
+            GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["Section", "Request"]], function (request) {
                 let filename = request.getResponseHeader("FileName");
 
                 // Create a new html element that will perform the download operation.
@@ -82,7 +87,7 @@
             <tr>
                 <th style="width: 50%">Name</th>
                 <th style="width: 16%">Type</th>
-                <th style="width: 16%">Size</th>
+                <th style="width: 16%">Size (MB)</th>
                 <th style="width: 18%">Action</th>
             </tr>
         </table>
@@ -94,7 +99,7 @@
             <tr>
                 <th style="width: 50%">Name</th>
                 <th style="width: 16%">Type</th>
-                <th style="width: 16%">Size</th>
+                <th style="width: 16%">Size (MB)</th>
                 <th style="width: 18%">Action</th>
             </tr>
         </table>

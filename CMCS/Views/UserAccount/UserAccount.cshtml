@@ -75,9 +75,9 @@
                             for (let i = 0; i < supportingDocuments.length; i++) {
                                 html += "<tr>";
                                 html += "<td class='table-cell-class' style='width: 46%'>" + supportingDocuments[i].Name + "</td>";
-                                html += "<td class='table-cell-class' style='width: 18%'>" + supportingDocuments[i].Size + "</td>";
+                                html += "<td class='table-cell-class' style='width: 18%'>" + round_off_to_mb(supportingDocuments[i].Size) + "</td>";
                                 html += "<td class='table-cell-class' style='width: 18%'>" + supportingDocuments[i].Type + "</td>";
-                                html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='ViewDocument(" + i + ")'>View</button><br /><div style='height: 8px'></div><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
+                                html += "<td class='table-cell-class' style='width: 18%'><button class='button-class button-class-small2' onclick='ViewDocument(" + supportingDocuments[i].DocumentID + ")'>View</button><br /><div style='height: 8px'></div><button class='button-class button-class-small2' onclick='DownloadDocument(" + i + ")'>Download</button><br /><div style='height: 4px'></div></td>";
                                 html += "</tr>";
                             }
 
@@ -112,9 +112,9 @@
             element.click();
         }
 
-        function ViewDocument(fileIndex) {
+        function ViewDocument(documentId) {
             // Redirect the user to the ViewDocument page.
-            window.location = "/UserAccount/ViewDocument?RequestID=" + selectedRequestID + "&DocumentIndex=" + fileIndex;
+            window.open("../html/ViewDocument.html?DocumentID=" + documentId, "ViewDocument", "width=600,height=720");
         }
 
         function EditRequest() {
@@ -338,7 +338,7 @@
                             <table cellpadding="16" class="request-display" style="width: 100%">
                                 <tr style="background-color: #304c80">
                                     <th class="table-cell-class" style="width: 46%">Document Name</th>
-                                    <th class="table-cell-class" style="width: 18%">Size</th>
+                                    <th class="table-cell-class" style="width: 18%">Size (MB)</th>
                                     <th class="table-cell-class" style="width: 18%">Type</th>
                                     <th class="table-cell-class" style="width: 18%">Action</th>
                                 </tr>

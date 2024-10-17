@@ -1,5 +1,6 @@
 ﻿using System.Data.SqlClient;
 using System.Data;
+using System.Transactions;
 
 namespace CMCS.Models
 {
@@ -7,6 +8,8 @@ namespace CMCS.Models
     {
         // Data fields
         private static SqlConnection? sqlConnection;
+        private static bool readerOpened = false;
+        private static SqlDataReader? sqlDataReader = null;
 
         /// <summary>
         /// Initializes the CMCS database connection.
@@ -40,7 +43,7 @@ namespace CMCS.Models
         }
 
         /// <summary>
-        /// Runs a SQL query that does not return a SqlDataReader object.
+        /// Runs a SQL query that does not return a SqlDataReader? object.
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         public static void RunSQLNoResult(string sql)
@@ -50,18 +53,37 @@ namespace CMCS.Models
         }
 
         /// <summary>
-        /// Runs a SQL query and returns a SqlDataReader object.
+        /// Runs a SQL query and returns a SqlDataReader? object.
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns></returns>
-        public static SqlDataReader RunSQLResult(string sql)
+        public static SqlDataReader? RunSQLResult(string sql)
         {
-            SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-            return sqlCmd.ExecuteReader();
+            if (!readerOpened)
+            {
+                readerOpened = true;
+                SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
+
+                try
+                {
+                    sqlDataReader = sqlCmd.ExecuteReader();
+                }
+                catch
+                {
+                    Thread.Sleep(500);
+                    return null;
+                }
+
+                return sqlDataReader;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Runs a SQL query and does not return a SqlDataReader object.
+        /// Runs a SQL query and does not return a SqlDataReader? object.
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns>The output from the SQL query.</returns>
@@ -71,6 +93,16 @@ namespace CMCS.Models
             return sqlCmd.ExecuteScalar();
         }
 
+        public static void CloseReader()
+        {
+            if(sqlDataReader != null && readerOpened)
+            {
+                readerOpened = false;
+                sqlDataReader?.Close();
+                sqlDataReader = null;
+            }
+        }
+
         /// <summary>
         /// This method counts the number of rows from a SQL SELECT statement.
         /// </summary>
@@ -78,15 +110,15 @@ namespace CMCS.Models
         /// <returns>The number of rows counted.</returns>
         public static int CountRows(string sql)
         {
-            SqlDataReader reader = RunSQLResult(sql);
+            SqlDataReader? reader = RunSQLResult(sql);
             int rowCount = 0;
 
-            while(reader.Read())
+            while(reader != null && reader.Read())
             {
                 rowCount++;
             }
 
-            reader.Close();
+            CMCSDB.CloseReader();
 
             return rowCount;
         }
@@ -99,15 +131,15 @@ namespace CMCS.Models
         public static int FindLecturer(string? identityNumber)
         {
             string sql = $"SELECT LecturerID FROM Lecturer WHERE IdentityNumber = '{identityNumber}'";
-            SqlDataReader reader = RunSQLResult(sql);
+            SqlDataReader? reader = RunSQLResult(sql);
             int lecturerId = 0;
 
-            if (reader.Read())
+            if (reader != null && reader.Read())
             {
                 lecturerId = Convert.ToInt32(reader["LecturerID"]);
             }
 
-            reader.Close();
+            CMCSDB.CloseReader();
 
             return lecturerId;
         }
@@ -120,15 +152,15 @@ namespace CMCS.Models
         public static int FindManager(string identityNumber)
         {
             string sql = $"SELECT ManagerID FROM Manager WHERE IdentityNumber = '{identityNumber}'";
-            SqlDataReader reader = RunSQLResult(sql);
+            SqlDataReader? reader = RunSQLResult(sql);
             int managerId = 0;
 
-            if (reader.Read())
+            if (reader != null && reader.Read())
             {
                 managerId = Convert.ToInt32(reader["ManagerID"]);
             }
             
-            reader.Close();
+            CMCSDB.CloseReader();
 
             return managerId;
         }
