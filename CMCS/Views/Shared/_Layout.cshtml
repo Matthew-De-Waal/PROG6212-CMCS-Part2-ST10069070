@@ -25,7 +25,7 @@
     <link rel="icon" type="image/x-icon" href="~/images/cmcs-logo.png" />
 </head>
 <body>
-    <header>
+    <header style="position: fixed; width: 100%; z-index: 20;">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-navbar border-bottom box-shadow">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Contract Monthly Claim System</a>
@@ -66,12 +66,13 @@
         </nav>
     </header>
     <div>
+        <div style="height: 4rem"></div>
         <div id="main-screen" style="position: relative; width: 100%; z-index: 0">
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>
         </div>
-        <div hidden align="center" id="loading-screen" style="position: absolute; z-index: 1; width: 100%; height: 50%; top: 25%; background-color: rgba(0, 0, 0, 0.8);">
+        <div hidden align="center" id="loading-screen" style="position: absolute; z-index: 1; width: 100%; height: 50%; background-color: rgba(0, 0, 0, 0.8);">
 
             <table style="height: 100%;">
                 <tr>
@@ -86,7 +87,7 @@
         </div>
     </div>
 
-    <footer class="border-top footer">
+    <footer id="main-footer" class="border-top footer">
         <div class="container">
             &copy; 2024 - CMCS - ST10069070
         </div>

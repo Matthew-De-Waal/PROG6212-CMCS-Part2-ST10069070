@@ -23,6 +23,7 @@
         let selectedIndex = -1;
         let selectedIndex2 = -1;
         let deletedDocuments = [];
+        let inProgress = false;
 
         function row_selected(index) {
             if (selectedIndex == index)
@@ -77,7 +78,10 @@
                 document.getElementById("documentList2").innerHTML = html;
             }
             else {
-                if(documentCount == 0)
+                if (deletedDocuments == "DELETE_ALL") {
+                    document.getElementById("documentList2").innerHTML = "<br /><b>No files uploaded</b><br /><br />";
+                }
+                else if(deletedDocuments.length == documentCount)
                     document.getElementById("documentList2").innerHTML = "<br /><b>No files uploaded</b><br /><br />";
             }
         }
@@ -109,7 +113,7 @@
                 }
 
                 for (let i = selectedIndex + 1; i < documents.length; i++) {
-                    list[i - selectedIndex] = documents[i];
+                    list[i - (selectedIndex + 1)] = documents[i];
                 }
 
                 documents = list;
@@ -126,6 +130,7 @@
 
                     // Remove the row from the table.
                     selectedIndex2 = -1;
+                    DisplayDocuments();
                 }
                 else {
                     // Show notification dialog.
@@ -142,7 +147,13 @@
             selectedIndex = -1;
             selectedIndex2 = -1;
 
-            document.getElementById("existing-documents").innerHTML = EMPTY_STRING;
+            let element = document.getElementById("existing-documents");
+
+            if(element != null)
+            {
+                element.innerHTML = EMPTY_STRING;
+            }
+
             // Display all the documents to the user.
             DisplayDocuments();
         }
@@ -187,6 +198,12 @@
                 // read matches with the total number of documents.
                 let interval = setInterval(function () {
                     if (documentsRead == documents.length) {
+                        // Show the loading screen if the webpage is taking long to respond.
+                        document.getElementById("main-screen").style.position = "absolute";
+                        document.getElementById("main-footer").style.position = "fixed";
+                        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                        document.getElementById("loading-screen").hidden = false;
+                        
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments };
                         // Post data
                         POST_DATA2("/Request/NewRequest", JSON.stringify(requestData), [["ActionName", "NewRequest"]], RequestSubmitted);
@@ -202,6 +219,11 @@
         }
 
         function RequestSubmitted(status) {
+            // Stop the interval.
+            document.getElementById("main-screen").style.position = "relative";
+            document.getElementById("main-footer").style.position = EMPTY_STRING;
+            document.getElementById("loading-screen").hidden = true;
+            
             if (status == 1) {
                 // Redirect the user to UserAccount page.
                 window.location = "/UserAccount/UserAccount";
@@ -252,6 +274,12 @@
                 // read matches with the total number of documents.
                 let interval = setInterval(function () {
                     if (documentsRead == documents.length) {
+                        // Show the loading screen if the webpage is taking long to respond.
+                        document.getElementById("main-screen").style.position = "absolute";
+                        document.getElementById("main-footer").style.position = "fixed";
+                        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                        document.getElementById("loading-screen").hidden = false;
+                        
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments, "DeletedDocuments": deletedDocuments };
                         let requestID = document.getElementById("RequestID").value;
 
@@ -269,6 +297,11 @@
         }
 
         function RequestUpdated(status) {
+            // Stop the interval.
+            document.getElementById("main-screen").style.position = "relative";
+            document.getElementById("main-footer").style.position = EMPTY_STRING;
+            document.getElementById("loading-screen").hidden = true;
+            
             if (status == 1) { 
                 // Redirect the user to the UserAccount page.
                 window.location = "/UserAccount/UserAccount";
@@ -295,13 +328,13 @@
                 // Check if the action name is 'NewRequest'.
                 if (sAction == "NewRequest")
                 {
-                                                    <img src="~/images/new-icon-large.png" height="180" />
+                                                        <img src="~/images/new-icon-large.png" height="180" />
                 }
 
                 // Check if the action name is 'EditRequest'.
                 if (sAction == "EditRequest")
                 {
-                                                    <img src="~/images/edit-icon-large.png" height="180" />
+                                                        <img src="~/images/edit-icon-large.png" height="180" />
                 }
             }
             <br />
@@ -338,13 +371,14 @@
                     <th style="width: 25%">Size (MB)</th>
                 </tr>
             </table>
-            <div id="documentList" style="overflow-y: auto">
+            <div id="documentList" style="height: 150px; overflow-y: auto">
                 <!-- Check if the method is 'GET' and the action name is 'EditRequest'. -->
                 @if (this.Context.Request.Method == "GET" && this.Context.Request.Query["ActionName"] == "EditRequest")
                 {
                     // Check if the count is greater than zero.
                     if (this.Model?.Count > 0)
                     {
+                       
                         <table id="existing-documents" style="width: 100%">
 
                             <!-- Iterate through the collection. -->
@@ -395,15 +429,15 @@
                 // Check if the action name is 'NewRequest'.
                 if (sAction == "NewRequest")
                 {
-                                                    <button class="button-class button-class-small" onclick="SubmitRequest()">Submit</button>
-                                                    <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+                                                        <button class="button-class button-class-small" onclick="SubmitRequest()">Submit</button>
+                                                        <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
                 }
 
                 // Check if the action name is 'EditRequest'.
                 if (sAction == "EditRequest")
                 {
-                                                    <button class="button-class button-class-small" onclick="UpdateRequest()">Update</button>
-                                                    <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
+                                                        <button class="button-class button-class-small" onclick="UpdateRequest()">Update</button>
+                                                        <button class="button-class button-class-small" onclick="window.location = '/UserAccount/UserAccount'">Cancel</button>
                 }
             }
         </div>

@@ -128,7 +128,7 @@ namespace CMCS.Models
                 rowCount++;
             }
 
-            CMCSDB.CloseReader();
+            CloseReader();
 
             return rowCount;
         }
@@ -149,7 +149,7 @@ namespace CMCS.Models
                 lecturerId = Convert.ToInt32(reader["LecturerID"]);
             }
 
-            CMCSDB.CloseReader();
+            CloseReader();
 
             return lecturerId;
         }
@@ -170,7 +170,7 @@ namespace CMCS.Models
                 managerId = Convert.ToInt32(reader["ManagerID"]);
             }
             
-            CMCSDB.CloseReader();
+            CloseReader();
 
             return managerId;
         }

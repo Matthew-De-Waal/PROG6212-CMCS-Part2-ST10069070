@@ -436,7 +436,7 @@ namespace CMCS.Controllers
         private void POST_NewRequest_Edit()
         {
             // Obtain the request id from the request query.
-            string? sRequestID = this.Request.Query["RequestID"];
+            string? sRequestID = this.Request.Headers["RequestID"];
 
             // Read the data from the request body, asynchronously.
             var sRequestData = new StreamReader(this.Request.Body).ReadToEndAsync().Result;

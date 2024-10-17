@@ -6,7 +6,6 @@
 const EMPTY_STRING = "";
 const MAX_FILE_SIZE_LIMIT = 10000000;
 
-
 // This method checks if the given password is strong enough.
 function IsStrongPassword(password) {
     let result = false;
@@ -93,7 +92,7 @@ function GET_DATA(url, header, e) {
 function GET_DATA2(url, header, e) {
     let request = new XMLHttpRequest();
     request.open("GET", url, true);
-
+    
     if (header != null) {
         for (let i = 0; i < header.length; i++) {
             request.setRequestHeader(header[i][0], header[i][1]);
