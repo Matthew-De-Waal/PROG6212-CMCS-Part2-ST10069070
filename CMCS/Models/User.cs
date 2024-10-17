@@ -1,6 +1,6 @@
 ﻿namespace CMCS.Models
 {
-    public class CMCSUser
+    public class User
     {
         // Automatic Properties
         public string? FirstName { get; set; }

@@ -32,8 +32,16 @@
             fileElement.click();
 
             fileElement.onchange = function() {
-                qualificationDocuments = fileElement.files;
-                document.getElementById("fileCount1").innerHTML = fileElement.files.length + " file(s) selected.";
+                let list = [];
+
+                for (let i = 0; i < fileElement.files.length; i++) { 
+                    if (fileElement.files[i].size <= MAX_FILE_SIZE_LIMIT) { 
+                        list[list.length] = fileElement.files[i];
+                    }
+                }
+
+                qualificationDocuments = list;
+                document.getElementById("fileCount1").innerHTML = list.length + " file(s) selected.";
             }
         }
 
@@ -47,8 +55,16 @@
             fileElement.click();
 
             fileElement.onchange = function () {
-                identityDocuments = fileElement.files;
-                document.getElementById("fileCount2").innerHTML = fileElement.files.length + " file(s) selected.";
+                let list = [];
+
+                for (let i = 0; i < fileElement.files.length; i++) { 
+                    if (fileElement.files[i].size <= MAX_FILE_SIZE_LIMIT) { 
+                        list[list.length] = fileElement.files[i];
+                    }
+                }
+
+                identityDocuments = list;
+                document.getElementById("fileCount2").innerHTML = list.length + " file(s) selected.";
             }
         }
 

@@ -100,9 +100,13 @@ namespace CMCS.Models
         {
             string sql = $"SELECT LecturerID FROM Lecturer WHERE IdentityNumber = '{identityNumber}'";
             SqlDataReader reader = RunSQLResult(sql);
-            reader.Read();
+            int lecturerId = 0;
 
-            int lecturerId = Convert.ToInt32(reader["LecturerID"]);
+            if (reader.Read())
+            {
+                lecturerId = Convert.ToInt32(reader["LecturerID"]);
+            }
+
             reader.Close();
 
             return lecturerId;
@@ -117,9 +121,13 @@ namespace CMCS.Models
         {
             string sql = $"SELECT ManagerID FROM Manager WHERE IdentityNumber = '{identityNumber}'";
             SqlDataReader reader = RunSQLResult(sql);
-            reader.Read();
+            int managerId = 0;
 
-            int managerId = Convert.ToInt32(reader["ManagerID"]);
+            if (reader.Read())
+            {
+                managerId = Convert.ToInt32(reader["ManagerID"]);
+            }
+            
             reader.Close();
 
             return managerId;

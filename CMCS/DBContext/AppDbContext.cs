@@ -8,5 +8,6 @@ namespace CMCS.DBContext
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<AccountRecovery> AccountRecovery { get; set; }
+        public DbSet<Document> Document { get; set; }
     }
 }

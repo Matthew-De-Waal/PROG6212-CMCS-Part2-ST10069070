@@ -1,6 +1,6 @@
 ﻿namespace CMCS.Models
 {
-    public class CMCSRequest
+    public class Request
     {
         // Automatic Properties
         public int RequestID { get; set; }

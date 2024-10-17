@@ -1,4 +1,5 @@
-﻿using CMCS.Models;
+﻿using CMCS.DBContext;
+using CMCS.Models;
 using Humanizer.DateTimeHumanizeStrategy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Localization;
@@ -16,6 +17,13 @@ namespace CMCS.Controllers
 {
     public class RequestController : Controller
     {
+        private readonly AppDbContext _context;
+
+        public RequestController(AppDbContext context)
+        {
+            _context = context;
+        }
+
         /// <summary>
         /// CMCS Status page.
         /// </summary>
@@ -92,8 +100,11 @@ namespace CMCS.Controllers
                 if (this.Request.Headers["ActionName"] == "GetRequestData")
                     ManageRequests_GetRequestData();
 
-                if (this.Request.Headers["ActionName"] == "GetDocumentContent")
-                    ManageRequests_GetDocumentContent();
+                if (this.Request.Headers["ActionName"] == "GetDocumentContent" && this.Request.Headers["Section"] == "Request")
+                    ManageRequests_GetDocumentContent(true);
+
+                if (this.Request.Headers["ActionName"] == "GetDocumentContent" && this.Request.Headers["Section"] == "UserProfile")
+                    ManageRequests_GetDocumentContent(false);
 
                 if (this.Request.Headers["ActionName"] == "GetRequestID")
                     ManageRequests_GetRequestID();
@@ -520,14 +531,14 @@ namespace CMCS.Controllers
             reader = CMCSDB.RunSQLResult(sql);
 
             // Declare and instantiate a List<CMCSDocument> object.
-            List<CMCSDocument> documents = new List<CMCSDocument>();
+            List<Document> documents = new List<Document>();
 
             // Iterate through the collection.
             for (int i = 0; i < row_count; i++)
             {
                 reader.Read();
 
-                documents.Add(new CMCSDocument
+                documents.Add(new Document
                 {
                     DocumentID = Convert.ToInt32(reader["DocumentID"].ToString()),
                     Name = reader["Name"].ToString(),
@@ -676,7 +687,7 @@ namespace CMCS.Controllers
             reader = CMCSDB.RunSQLResult(sql);
 
             // Declare and instantiate a List<CMCSDocument> object.
-            List<CMCSDocument> documentList = new List<CMCSDocument>();
+            List<Document> documentList = new List<Document>();
 
             // Iterate through the collection.
             for (int i = 0; i < row_count; i++)
@@ -684,7 +695,7 @@ namespace CMCS.Controllers
                 // Read data from the SqlDataReader object.
                 reader.Read();
 
-                var document = new CMCSDocument();
+                var document = new Document();
                 document.DocumentID = Convert.ToInt32(reader["DocumentID"]);
                 document.Name = reader["Name"].ToString();
                 document.Size = Convert.ToInt32(reader["Size"]);
@@ -707,31 +718,46 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_GetDocumentContent()
+        private void ManageRequests_GetDocumentContent(bool bRequestDocument)
         {
-            // Obtain the data from the request headers 'RequestID' and 'FileIndex'.
-            int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
-            int fileIndex = Convert.ToInt32(this.Request.Headers["FileIndex"]);
+            if (bRequestDocument)
+            {
+                // Obtain the data from the request headers 'RequestID' and 'FileIndex'.
+                int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
+                int fileIndex = Convert.ToInt32(this.Request.Headers["FileIndex"]);
 
-            string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
-            // Declare and instantiate a SqlDataReader object.
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+                string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
+                // Declare and instantiate a SqlDataReader object.
+                SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
-            // Iterate through the collection.
-            for (int i = 0; i < fileIndex; i++)
+                // Iterate through the collection.
+                for (int i = 0; i < fileIndex; i++)
+                    reader.Read();
+
+                // Read data from the SqlDataReader object.
                 reader.Read();
+                string filename = reader["Name"].ToString();
+                string documentContent = reader["Content"].ToString();
+                // Close the SqlDataReader object.
+                reader.Close();
 
-            // Read data from the SqlDataReader object.
-            reader.Read();
-            string filename = reader["Name"].ToString();
-            string documentContent = reader["Content"].ToString();
-            // Close the SqlDataReader object.
-            reader.Close();
+                // The request succeeded.
+                this.Response.StatusCode = 1;
+                this.Response.WriteAsync($"[{filename}]{documentContent}");
+                this.Response.CompleteAsync();
+            }
+            else
+            {
+                int documentId = Convert.ToInt32(this.Request.Headers["DocumentID"]);
+                Document document = _context.Document.Where(i => i.DocumentID == documentId).ToList()[0];
 
-            // The request succeeded.
-            this.Response.StatusCode = 1;
-            this.Response.WriteAsync($"[{filename}]{documentContent}");
-            this.Response.CompleteAsync();
+                this.Response.Headers.Add("FileName", document.Name);
+
+                // The request succeeded.
+                this.Response.StatusCode = 1;
+                this.Response.WriteAsync(document.Content);
+                this.Response.CompleteAsync();
+            }
         }
 
         /// <summary>
@@ -744,7 +770,7 @@ namespace CMCS.Controllers
             SqlDataReader reader = CMCSDB.RunSQLResult(sql1);
 
             // Declare and instantiate a List<CMCDRequest> object.
-            List<CMCSRequest> requestList = new List<CMCSRequest>();
+            List<Request> requestList = new List<Request>();
 
             // Iterate through the collection.
             for (int i = 0; i < row_count; i++)
@@ -753,7 +779,7 @@ namespace CMCS.Controllers
                 reader.Read();
 
                 // Declare and instantiate a CMCSRequest object.
-                var request = new CMCSRequest();
+                var request = new Request();
                 request.RequestID = Convert.ToInt32(reader["RequestID"].ToString());
                 request.LecturerID = Convert.ToInt32(reader["LecturerID"].ToString());
                 request.RequestFor = reader["RequestFor"].ToString();
@@ -806,15 +832,17 @@ namespace CMCS.Controllers
             {
                 string sql3 = $"SELECT * FROM Lecturer WHERE LecturerID = {requestList[i].LecturerID}";
                 reader = CMCSDB.RunSQLResult(sql3);
-                // Read data from the reader.
-                reader.Read();
 
-                string lecturerName = $"{reader["FirstName"]} {reader["LastName"]}";
+                if (reader.Read())
+                {
+                    string lecturerName = $"{reader["FirstName"]} {reader["LastName"]}";
+                    
+                    // Add the result to the 'lecturerNames' collection.
+                    lecturerNames.Add(lecturerName);
+                }
+
                 // Close the reader.
                 reader.Close();
-
-                // Add the result to the 'lecturerNames' collection.
-                lecturerNames.Add(lecturerName);
             }
 
             var view = View(requestList);

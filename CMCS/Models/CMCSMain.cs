@@ -9,7 +9,7 @@ namespace CMCS.Models
     public static class CMCSMain
     {
         // Automatic Properties
-        public static CMCSUser User { get; set; } = new CMCSUser();
+        public static User User { get; set; } = new User();
         public static int SelectedRequestIndex { get; set; } = -1;
         public static int SelectedRequestID { get; set; }
 

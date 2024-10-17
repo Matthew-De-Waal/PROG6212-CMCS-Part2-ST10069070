@@ -2,7 +2,7 @@
 
 namespace CMCS.Models
 {
-    public class CMCSDocument
+    public class Document
     {
         // Automatic Properties
         [Key]

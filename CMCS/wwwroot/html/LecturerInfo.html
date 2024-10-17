@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>CMCS - View Lecturer Information</title>
+    <script src="../js/site.js"></script>
+    <script type="text/javascript">
+
+        let queryString = window.location.search;
+        let query = new URLSearchParams(queryString);
+
+        let lecturerId = query.get("LecturerID");
+
+        let qualificationDocuments = null;
+        let identityDocuments = null;
+
+        GET_DATA2("/UserAccount/UserAccount", [["ActionName", "GetUserAccountData"], ["LecturerID", lecturerId]], function (request) {
+            if (request.status == 1) {
+                let userData = JSON.parse(request.response);
+
+                document.getElementById("lblLecturerID").innerHTML = userData.LecturerID;
+                document.getElementById("lblFirstName").innerHTML = userData.FirstName;
+                document.getElementById("lblLastName").innerHTML = userData.LastName;
+                document.getElementById("lblEmailAddress").innerHTML = userData.EmailAddress;
+                document.getElementById("lblIdentityNumber").innerHTML = userData.IdentityNumber;
+                
+                qualificationDocuments = userData.QualificationDocuments;
+                identityDocuments = userData.IdentityDocuments;
+
+                for (let i = 0; i < qualificationDocuments.length; i++) {
+                    let html = "<tr><td style='width: 50%'>" + qualificationDocuments[i].Name + "</td><td style='width: 16%'>" + qualificationDocuments[i].Type + "</td><td style='width: 16%'>" + qualificationDocuments[i].Size + "</td><td style='width: 18%'><button onclick='DownloadDocument(" + qualificationDocuments[i].DocumentID + ")'>Download</button>";
+                    document.getElementById("qualifications").innerHTML += html;
+                }
+            }
+        });
+
+        function DownloadDocument(documentId) {
+            GET_DATA2("/Request/ManageRequests", [["ActionName", "GetDocumentContent"], ["Section", "UserProfile"], ["DocumentID", documentId]], function (request) {
+                let filename = request.getResponseHeader("FileName");
+
+                // Create a new html element that will perform the download operation.
+                let element = document.createElement("a");
+                element.href = "data:application/octet-stream;base64," + request.response;
+                element.download = filename;
+                element.click();
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div align="center">
+        <h2>View Lecturer Information</h2>
+
+        <table border="1" style="width: 500px">
+            <tr>
+                <th>Lecturer ID</th>
+                <td><span id="lblLecturerID"></span></td>
+            </tr>
+            <tr>
+                <th>First Name</th>
+                <td><span id="lblFirstName"></span></td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td><span id="lblLastName"></span></td>
+            </tr>
+            <tr>
+                <th>Email Address</th>
+                <td><span id="lblEmailAddress"></span></td>
+            </tr>
+            <tr>
+                <th>Identity Number</th>
+                <td><span id="lblIdentityNumber"></span></td>
+            </tr>
+        </table>
+        <br />
+
+        <b>Qualification Document(s):</b>
+        <br />
+        <table id="qualifications" border="1" style="width: 500px">
+            <tr>
+                <th style="width: 50%">Name</th>
+                <th style="width: 16%">Type</th>
+                <th style="width: 16%">Size</th>
+                <th style="width: 18%">Action</th>
+            </tr>
+        </table>
+        <br />
+
+        <b>Identity Document(s):</b>
+        <br />
+        <table id="identity" border="1" style="width: 500px">
+            <tr>
+                <th style="width: 50%">Name</th>
+                <th style="width: 16%">Type</th>
+                <th style="width: 16%">Size</th>
+                <th style="width: 18%">Action</th>
+            </tr>
+        </table>
+
+    </div>
+</body>
+</html>

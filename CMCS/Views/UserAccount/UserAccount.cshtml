@@ -1,4 +1,4 @@
-﻿@model List<CMCSRequest>
+﻿@model List<Request>
 
 @{
     ViewData["Title"] = "UserAccount";
@@ -217,7 +217,7 @@
 
         function ManageAccount() {
             // Redirect the user to the UpdateUserProfile page.
-            window.location = "/UserAccount/UpdateUserProfile";
+            window.location = "/UserAccount/UpdateUserProfile?Role=Lecturer";
         }
 
         // Show/Hide the supporting documents view.
@@ -287,7 +287,7 @@
                                             int count = 0;
 
                                             // Iterate through the collection.
-                                            foreach (CMCSRequest request in this.Model)
+                                            foreach (Request request in this.Model)
                                             {
                                                 var requestApproved = string.Empty;
                                                 string sDateSubmitted = request.DateSubmitted.HasValue ? request.DateSubmitted.Value.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;

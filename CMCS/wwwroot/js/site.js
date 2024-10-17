@@ -4,6 +4,7 @@
 // Write your JavaScript code.
 
 const EMPTY_STRING = "";
+const MAX_FILE_SIZE_LIMIT = 10000000;
 
 
 // This method checks if the given password is strong enough.
@@ -116,7 +117,7 @@ function delete_item(array, index) {
     }
 
     for (let i = index + 1; i < array.length; i++) {
-        list[i - index] = array[i];
+        list[i - (index + 1)] = array[i];
     }
 
     return list;

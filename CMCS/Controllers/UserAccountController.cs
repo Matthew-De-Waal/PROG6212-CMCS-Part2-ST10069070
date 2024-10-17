@@ -149,8 +149,8 @@ namespace CMCS.Controllers
                 dynamic? identityDocuments = userData?.IdentityDocuments;
 
                 // Declare and instantiate generic collections.
-                List<CMCSDocument> QualificationDocuments = new List<CMCSDocument>();
-                List<CMCSDocument> IdentityDocuments = new List<CMCSDocument>();
+                List<Models.Document> QualificationDocuments = new List<Models.Document>();
+                List<Models.Document> IdentityDocuments = new List<Models.Document>();
 
                 // Iterate through the 'qualificationDocuments' array.
                 for (int i = 0; i < qualificationDocuments?.Count; i++)
@@ -164,7 +164,7 @@ namespace CMCS.Controllers
                     string documentContent = Convert.ToString(document.Content);
 
                     // Add a new CMCSDocument to the collection.
-                    QualificationDocuments.Add(new CMCSDocument
+                    QualificationDocuments.Add(new Models.Document
                     {
                         Name = documentName,
                         Size = documentSize,
@@ -186,7 +186,7 @@ namespace CMCS.Controllers
                     string documentContent = Convert.ToString(document.Content);
 
                     // Add a new CMCDocument to the collection.
-                    IdentityDocuments.Add(new CMCSDocument
+                    IdentityDocuments.Add(new Models.Document
                     {
                         Name = documentName,
                         Size = documentSize,
@@ -249,7 +249,7 @@ namespace CMCS.Controllers
         {
             // Open the database connection.
             CMCSDB.OpenConnection();
-            List<CMCSRequest> requestList = new List<CMCSRequest>();
+            List<Request> requestList = new List<Request>();
 
             if (!this.Request.Headers.ContainsKey("ActionName"))
             {
@@ -268,7 +268,7 @@ namespace CMCS.Controllers
                         reader.Read();
 
                         // Create a CMCSRequest object.
-                        CMCSRequest request = new CMCSRequest();
+                        Request request = new Request();
                         request.RequestID = Convert.ToInt32(reader["RequestID"]);
                         request.LecturerID = Convert.ToInt32(reader["LecturerID"]);
                         request.RequestFor = Convert.ToString(reader["RequestFor"]);
@@ -318,6 +318,9 @@ namespace CMCS.Controllers
             // GET method
             if (this.Request.Method == "GET")
             {
+                if (this.Request.Headers["ActionName"] == "GetUserAccountData")
+                    UserAccount_GetUserAccountData(false);
+
                 if (this.Request.Headers["ActionName"] == "GetSupportingDocuments")
                     UserAccount_GetSupportingDocuments();
 
@@ -364,7 +367,7 @@ namespace CMCS.Controllers
             reader.Read();
 
             // Declare and instantiate a CMCSDocument object.
-            CMCSDocument document = new CMCSDocument();
+            Models.Document document = new Models.Document();
             document.DocumentID = Convert.ToInt32(reader["DocumentID"].ToString());
             document.Name = reader["Name"].ToString();
             document.Size = Convert.ToInt32(reader["Size"].ToString());
@@ -395,7 +398,7 @@ namespace CMCS.Controllers
             if (this.Request.Method == "GET")
             {
                 if (this.Request.Headers["ActionName"] == "GetUserAccountData")
-                    UserAccount_GetUserAccountData();
+                    UserAccount_GetUserAccountData(true);
 
                 if (this.Request.Headers["ActionName"] == "GetRecoveryFile")
                     UserAccount_GetRecoveryFile();
@@ -419,6 +422,9 @@ namespace CMCS.Controllers
                 bool generateNewRecoveryFile = Convert.ToBoolean(userData.GenerateNewRecoveryFile);
                 string? securityQuestion = Convert.ToString(userData.SecurityQuestion);
                 string? securityAnswer = Convert.ToString(userData.SecurityAnswer);
+                string? currentPassword = Convert.ToString(userData.CurrentPassword);
+                string? newPassword = Convert.ToString(userData.NewPassword);
+                string? newPasswordConfirmed = Convert.ToString(userData.NewPasswordConfirmed);
 
                 // Dynamic objects.
                 dynamic? qualificationDocuments = userData.QualificationDocuments;
@@ -429,13 +435,15 @@ namespace CMCS.Controllers
                 // Check if the user is not a Manager.
                 if (!CMCSMain.User.IsManager)
                 {
-                    string sql = $"UPDATE Lecturer SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+                    string sql = $"UPDATE Lecturer SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}' WHERE LecturerID = {lecturerId}";
                     // Run a SQL query.
                     CMCSDB.RunSQLNoResult(sql);
                 }
                 else
                 {
-                    string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}'";
+                    int managerId = CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
+                    string sql = $"UPDATE Manager SET FirstName = '{firstName}', LastName = '{lastName}', IdentityNumber = '{identityNumber}', EmailAddress = '{emailAddress}' WHERE ManagerID = {managerId}";
                     // Run a SQL query.
                     CMCSDB.RunSQLNoResult(sql);
                 }
@@ -475,9 +483,13 @@ namespace CMCS.Controllers
                 }
                 else
                 {
-                    AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
-                    _context.Remove(recovery);
-                    _context.SaveChangesAsync();
+                    var result = _context.AccountRecovery.Where(i => i.Method == "FILE" && i.UserID == CMCSMain.User.IdentityNumber).ToList();
+
+                    if (result.Count > 0)
+                    {
+                        _context.Remove(result[0]);
+                        _context.SaveChangesAsync();
+                    }
                 }
 
                 // Check if 'Recovery Method 2' is enabled.
@@ -507,9 +519,13 @@ namespace CMCS.Controllers
                 }
                 else
                 {
-                    AccountRecovery recovery = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == CMCSMain.User.IdentityNumber).ToList()[0];
-                    _context.Remove(recovery);
-                    _context.SaveChangesAsync();
+                    var result = _context.AccountRecovery.Where(i => i.Method == "QUESTION" && i.UserID == CMCSMain.User.IdentityNumber).ToList();
+
+                    if (result.Count > 0)
+                    {
+                        _context.Remove(result[0]);
+                        _context.SaveChangesAsync();
+                    }
                 }
 
                 // Insert the uploaded qualification documents.
@@ -552,6 +568,66 @@ namespace CMCS.Controllers
                     string sql = $"DELETE FROM Document WHERE DocumentID = {documentId}";
                     // Run a SQL query.
                     CMCSDB.RunSQLNoResult(sql);
+                }
+
+                if(!string.IsNullOrEmpty(currentPassword) ||
+                    !string.IsNullOrEmpty(newPassword) ||
+                    !string.IsNullOrEmpty(newPasswordConfirmed))
+                {
+                    string sql = string.Empty;
+
+                    if(!CMCSMain.User.IsManager)
+                    {
+                        int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+                        sql = $"SELECT * FROM Lecturer WHERE LecturerID = {lecturerId}";
+                        SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                        bool success = false;
+
+                        if(reader.Read())
+                        {
+                            string? password = reader["Password"].ToString();
+                            
+                            if(currentPassword == password && newPassword == newPasswordConfirmed)
+                            {
+                                success = true;
+                            }
+                        }
+
+                        reader.Close();
+
+                        if (success)
+                        {
+                            string sql2 = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = {lecturerId}";
+                            CMCSDB.RunSQLNoResult(sql2);
+                        }
+                    }
+                    else
+                    {
+                        int managerId = CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
+                        sql = $"SELECT * FROM Lecturer WHERE LecturerID = {managerId}";
+                        SqlDataReader reader = CMCSDB.RunSQLResult(sql);
+
+                        bool success = false;
+
+                        if (reader.Read())
+                        {
+                            string? password = reader["Password"].ToString();
+
+                            if (currentPassword == password && newPassword == newPasswordConfirmed)
+                            {
+                                success = true;
+                            }
+                        }
+
+                        reader.Close();
+
+                        if (success)
+                        {
+                            string sql2 = $"UPDATE Manager SET Password = '{newPassword}' WHERE ManagerID = {managerId}";
+                            CMCSDB.RunSQLNoResult(sql2);
+                        }
+                    }
                 }
 
                 // The request succeeded.
@@ -626,12 +702,34 @@ namespace CMCS.Controllers
                 if (success)
                 {
                     // Obtain the lecturer id.
-                    int lecturerId = CMCSDB.FindLecturer(userId);
-                    string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = '{lecturerId}'";
-                    CMCSDB.RunSQLNoResult(sql);
+                    int userAccountId = CMCSDB.FindLecturer(userId);
 
-                    // The request succeeded.
-                    this.Response.StatusCode = 1;
+                    if (userAccountId != 0)
+                    {
+                        string sql = $"UPDATE Lecturer SET Password = '{newPassword}' WHERE LecturerID = '{userAccountId}'";
+                        CMCSDB.RunSQLNoResult(sql);
+
+                        // The request succeeded.
+                        this.Response.StatusCode = 1;
+                    }
+                    else
+                    {
+                        userAccountId = CMCSDB.FindManager(userId);
+
+                        if (userAccountId != 0)
+                        {
+                            string sql = $"UPDATE Manager SET Password = '{newPassword}' WHERE ManagerID = '{userAccountId}'";
+                            CMCSDB.RunSQLNoResult(sql);
+
+                            // The request succeeded.
+                            this.Response.StatusCode = 1;
+                        }
+                        else
+                        {
+                            // The request failed.
+                            this.Response.StatusCode = 2;
+                        }
+                    }
                 }
                 else
                 {
@@ -698,7 +796,7 @@ namespace CMCS.Controllers
             SqlDataReader reader = CMCSDB.RunSQLResult(sql);
 
             // Create a generic collection instance.
-            List<CMCSDocument> documentList = new List<CMCSDocument>();
+            List<Models.Document> documentList = new List<Models.Document>();
 
             // Iterate through the collection.
             for (int i = 0; i < row_count; i++)
@@ -706,7 +804,7 @@ namespace CMCS.Controllers
                 reader.Read();
 
                 // Create a CMCSDocument instance.
-                var document = new CMCSDocument();
+                var document = new Models.Document();
                 document.DocumentID = Convert.ToInt32(reader["DocumentID"]);
                 document.Name = reader["Name"].ToString();
                 document.Size = Convert.ToInt32(reader["Size"]);
@@ -760,37 +858,61 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the 'UserAccount' method.
         /// </summary>
-        private void UserAccount_GetUserAccountData()
+        private void UserAccount_GetUserAccountData(bool currentUser)
         {
-            // Obtain the lecturer id
-            int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
-            string sql = $"SELECT * FROM Lecturer WHERE LecturerID = {lecturerId}";
-            SqlDataReader reader = CMCSDB.RunSQLResult(sql);
-
             // Variable declarations
             string? firstName = string.Empty;
             string? lastName = string.Empty;
             string? identityNumber = string.Empty;
             string? emailAddress = string.Empty;
 
-            // Check if the reader can read data.
-            if (reader.Read())
-            {
-                firstName = reader["FirstName"].ToString();
-                lastName = reader["LastName"].ToString();
-                identityNumber = reader["IdentityNumber"].ToString();
-                emailAddress = reader["EmailAddress"].ToString();
-            }
+            SqlDataReader? reader = null;
 
-            // Close the SqlDataReader object.
-            reader.Close();
+            if (!CMCSMain.User.IsManager)
+            {
+                // Obtain the lecturer id
+                int lecturerId = currentUser ? CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber) : Convert.ToInt32(this.Request.Headers["LecturerID"]);
+                string sql = $"SELECT * FROM Lecturer WHERE LecturerID = {lecturerId}";
+                reader = CMCSDB.RunSQLResult(sql);
+
+                // Check if the reader can read data.
+                if (reader.Read())
+                {
+                    firstName = reader["FirstName"].ToString();
+                    lastName = reader["LastName"].ToString();
+                    identityNumber = reader["IdentityNumber"].ToString();
+                    emailAddress = reader["EmailAddress"].ToString();
+                }
+
+                // Close the SqlDataReader object.
+                reader.Close();
+            }
+            else
+            {
+                // Obtain the manager id
+                int managerId = CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
+                string sql = $"SELECT * FROM Manager WHERE ManagerID = {managerId}";
+                reader = CMCSDB.RunSQLResult(sql);
+
+                // Check if the reader can read data.
+                if (reader.Read())
+                {
+                    firstName = reader["FirstName"].ToString();
+                    lastName = reader["LastName"].ToString();
+                    identityNumber = reader["IdentityNumber"].ToString();
+                    emailAddress = reader["EmailAddress"].ToString();
+                }
+
+                // Close the SqlDataReader object.
+                reader.Close();
+            }
 
             string sql2 = $"SELECT * FROM Document WHERE UserID = '{CMCSMain.User.IdentityNumber}'";
             reader = CMCSDB.RunSQLResult(sql2);
 
             // Generic collections.
-            List<CMCSDocument> qualificationDocuments = new();
-            List<CMCSDocument> identityDocuments = new();
+            List<Models.Document> qualificationDocuments = new();
+            List<Models.Document> identityDocuments = new();
 
             // Iterate through the collection.
             while (reader.Read())
@@ -803,7 +925,7 @@ namespace CMCS.Controllers
                 string documentContent = reader["Content"].ToString();
 
                 // Declare a new object of type 'CMCSDocument'.
-                CMCSDocument document = new()
+                Models.Document document = new()
                 {
                     DocumentID = documentId,
                     Name = documentName,
@@ -932,7 +1054,7 @@ namespace CMCS.Controllers
         /// <param name="password">The user's password.</param>
         /// <param name="qualificationDocuments">The user's qualification documents.</param>
         /// <param name="identityDocuments">The user's identity documents.</param>
-        private void RegisterUser(bool bLecturer, string firstName, string lastName, string identityNumber, string emailAddress, string password, CMCSDocument[] qualificationDocuments, CMCSDocument[] identityDocuments)
+        private void RegisterUser(bool bLecturer, string firstName, string lastName, string identityNumber, string emailAddress, string password, Models.Document[] qualificationDocuments, Models.Document[] identityDocuments)
         {
             // Check if the user type is a Lecturer.
             if (bLecturer)

@@ -1,4 +1,4 @@
-﻿@model List<CMCSDocument>
+﻿@model List<Document>
 
 @{
     // Obtain the action name from the request query.
@@ -189,7 +189,7 @@
                     if (documentsRead == documents.length) {
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments };
                         // Post data
-                        POST_DATA("/Request/NewRequest?ActionName=NewRequest", JSON.stringify(requestData), RequestSubmitted);
+                        POST_DATA2("/Request/NewRequest", JSON.stringify(requestData), [["ActionName", "NewRequest"]], RequestSubmitted);
                         // Clear the interval.
                         clearInterval(interval);
                     }
@@ -256,7 +256,7 @@
                         let requestID = document.getElementById("RequestID").value;
 
                         // Post data
-                        POST_DATA("/Request/NewRequest?ActionName=EditRequest&RequestID=" + requestID, JSON.stringify(requestData), RequestUpdated);
+                        POST_DATA2("/Request/NewRequest", JSON.stringify(requestData), [["ActionName", "EditRequest"], ["RequestID", requestID]], RequestUpdated);
                         // Clear the interval.
                         clearInterval(interval);
                     }

@@ -19,6 +19,10 @@
         let deleted_qualification_items = [];
         let deleted_identity_items = [];
 
+        let queryString = document.location.search;
+        let query = new URLSearchParams(queryString);
+        let role = query.get("Role");
+
         // Get data from the request.
         GET_DATA("/UserAccount/UpdateUserProfile", [["ActionName", "GetUserAccountData"]], function(status, response) {
             // Check if the status is OK.
@@ -158,8 +162,8 @@
             else
             {
                 // Delete an existing document.
-                qualificationDocuments = delete_item(qualificationDocuments, selectedQualificationIndex);
                 deleted_qualification_items[deleted_qualification_items.length] = qualificationDocuments[selectedQualificationIndex].DocumentID;
+                qualificationDocuments = delete_item(qualificationDocuments, selectedQualificationIndex);
             }
 
             selectedQualificationIndex = -1;
@@ -208,8 +212,8 @@
             else
             {
                 // Delete an existing document.
-                identityDocuments = delete_item(identityDocuments, selectedIdentityIndex);
                 deleted_identity_items[deleted_identity_items.length] = identityDocuments[selectedIdentityIndex].DocumentID;
+                identityDocuments = delete_item(identityDocuments, selectedIdentityIndex);
             }
 
             selectedIdentityIndex = -1;
@@ -232,6 +236,9 @@
             let lastName = document.getElementById("txtLastName").value;
             let identityNumber = document.getElementById("txtIdentityNumber").value;
             let emailAddress = document.getElementById("txtEmailAddress").value;
+            let currentPassword = document.getElementById("txtCurrentPassword").value;
+            let newPassword = document.getElementById("txtNewPassword").value;
+            let newPasswordConfirmed = document.getElementById("txtNewPasswordConfirmed").value;
 
             // Data validation
             let validation = firstName.length > 0 &&
@@ -254,6 +261,12 @@
                 validation = validation && question.length > 0 && answer.length > 0;
             }
 
+            if(currentPassword != EMPTY_STRING || newPassword != EMPTY_STRING || newPasswordConfirmed != EMPTY_STRING)
+            {
+                validation = validation && (currentPassword != EMPTY_STRING && newPassword != EMPTY_STRING && newPasswordConfirmed != EMPTY_STRING) 
+                             && IsStrongPassword(newPassword) && IsStrongPassword(newPasswordConfirmed);
+            }
+
             // Check if the validation process succeeded.
             if (validation) {
                 // Create a new object.
@@ -269,6 +282,9 @@
                 userData.GenerateNewRecoveryFile = document.getElementById("chkGenerateNew").checked;
                 userData.SecurityQuestion = question;
                 userData.SecurityAnswer = answer;
+                userData.CurrentPassword = currentPassword;
+                userData.NewPassword = newPassword;
+                userData.NewPasswordConfirmed = newPasswordConfirmed;
 
                 // Variable Declarations
                 let qualification_documents = [];
@@ -319,10 +335,17 @@
                     if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) {
                         // Post data
                         POST_DATA2("/UserAccount/UpdateUserProfile", JSON.stringify(userData), [["ActionName", "UpdateAccount"]], function (status) {
-                            // Check if the status is OK.
-                            if (status == 1) {
+                            // Check if the status is OK and the role is 'Lecturer'.
+                            if (status == 1 && role == "Lecturer") {
                                 // Redirect the user to the UserAccount page.
                                 window.location = "/UserAccount/UserAccount";
+                            }
+
+                            // Check if the status is OK and the role is 'Manager'.
+                            if(status == 1 && role == "Manager")
+                            {
+                                // Redirect the user to the ManageRequests page.a
+                                window.location = "/Request/ManageRequests";
                             }
                         });
 
@@ -339,8 +362,16 @@
 
         function CancelUpdate()
         {
-            // Redirect the user to the UserAccount page.
-            window.location = "/UserAccount/UserAccount";
+            if (role == "Lecturer") {
+                // Redirect the user to the UserAccount page.
+                window.location = "/UserAccount/UserAccount";
+            }
+
+            if(role == "Manager")
+            {
+                // Redirect the user to the ManageRequests page.
+                window.location = "/Request/ManageRequests";
+            }
         }
 
         function DownloadRecoveryFile() { 
@@ -495,17 +526,17 @@
 
             <tr>
                 <th>Current Password:</th>
-                <td><input type="password" value="" style="width: 100%" /></td>
+                <td><input id="txtCurrentPassword" type="password" value="" style="width: 100%" /></td>
             </tr>
 
             <tr>
                 <th>New Password:</th>
-                <td><input type="password" value="" style="width: 100%" /></td>
+                <td><input id="txtNewPassword" type="password" value="" style="width: 100%" /></td>
             </tr>
 
             <tr>
                 <th>Confirm New Password:</th>
-                <td><input type="password" value="" style="width: 100%" /></td>
+                <td><input id="txtNewPasswordConfirmed" type="password" value="" style="width: 100%" /></td>
             </tr>
 
         </table>
