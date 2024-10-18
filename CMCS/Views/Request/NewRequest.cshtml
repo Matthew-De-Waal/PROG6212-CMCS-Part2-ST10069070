@@ -344,17 +344,22 @@
         <h3 align="left">@ViewData?["Title"]</h3>
         <br />
 
+        <div style="text-align: left">
+            <b>Required fields are marked with an asterisk (*)</b>
+        </div>
+        <br />
+
         <table style="width: 600px" cellpadding="4">
             <tr>
-                <th>Request/Claim for:</th>
+                <th>Request/Claim for: <span class="red-asterisk">*</span></th>
                 <td><input id="txtRequestFor" type="text" value="@ViewData["RequestFor"]" style="width: 300px" /></td>
             </tr>
             <tr>
-                <th>Hours Worked:</th>
+                <th>Hours Worked: <span class="red-asterisk">*</span></th>
                 <td><input id="txtHoursWorked" type="text" value="@ViewData["HoursWorked"]" style="width: 200px" /></td>
             </tr>
             <tr>
-                <th>Hourly Rate:</th>
+                <th>Hourly Rate: <span class="red-asterisk">*</span></th>
                 <td><input id="txtHourlyRate" type="text" value="@ViewData["HourlyRate"]" style="width: 200px" /></td>
             </tr>
         </table>
@@ -419,7 +424,7 @@
         </div>
         <br />
         <div align="left">
-            <b>Additional Notes (Description)</b>
+            <b>Additional Notes (Description) <span class="red-asterisk">*</span></b>
             <textarea id="txtDescription" style="width: 600px; height: 200px">@ViewData["Description"]</textarea>
         </div>
         <br />
