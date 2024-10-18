@@ -11,10 +11,10 @@ namespace CMCS.UnitTests
         private const string CONNECTION_STRING = "Server=tcp:cmcs-sql-server-st10069070.database.windows.net,1433;Initial Catalog=cmcs-db;Persist Security Info=False;User ID=cmcs-admin;Password=server333#1;MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
         [TestMethod]
-        public void Test_RegisterUser()
+        public async Task Test_RegisterUser()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -47,10 +47,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_UserLogin()
+        public async Task Test_UserLogin()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -90,10 +90,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_SubmitClaim()
+        public async Task Test_SubmitClaim()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -117,10 +117,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_EditClaim()
+        public async Task Test_EditClaim()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection
             await CMCSDB.OpenConnection();
 
@@ -139,10 +139,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_CancelClaim()
+        public async Task Test_CancelClaim()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -161,10 +161,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_TrackClaim_IsPending()
+        public async Task Test_TrackClaim_IsPending()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -193,10 +193,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_TrackClaim_IsApproved()
+        public async Task Test_TrackClaim_IsApproved()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 
@@ -225,10 +225,10 @@ namespace CMCS.UnitTests
         }
 
         [TestMethod]
-        public void Test_TrackClaim_IsRejected()
+        public async Task Test_TrackClaim_IsRejected()
         {
             // Database initialization
-            await CMCSDB.Initialize(CONNECTION_STRING);
+            CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
             await CMCSDB.OpenConnection();
 

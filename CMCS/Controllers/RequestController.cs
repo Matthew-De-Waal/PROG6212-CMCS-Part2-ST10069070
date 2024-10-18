@@ -474,7 +474,7 @@ namespace CMCS.Controllers
                 string documentType = CMCSMain.GetDocumentType(documentName);
 
                 string sql1 = $"INSERT INTO Document(Name, Type, Size, Section, UserID, Content) OUTPUT INSERTED.DocumentID VALUES ('{documents?[i].Name}', '{documentType}', {documents?[i].Size}, 'REQUEST', '{CMCSMain.User.IdentityNumber}', '{documents?[i].Content}')";
-                int documentID = (int)await CMCSDB.RunSQLResultScalar(sql1);
+                int? documentID = (int?)await CMCSDB.RunSQLResultScalar(sql1);
 
                 string sql3 = $"INSERT INTO RequestDocument(RequestID, DocumentID) VALUES ({sRequestID}, {documentID})";
                 await CMCSDB.RunSQLNoResult(sql3);
