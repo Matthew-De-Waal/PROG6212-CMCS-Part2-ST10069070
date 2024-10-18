@@ -96,7 +96,8 @@
 
             fileDialog.onchange = function () {
                 for (let i = 0; i < fileDialog.files.length; i++) {
-                    documents[documents.length] = fileDialog.files[i];
+                    if(fileDialog.files[i].size <= MAX_FILE_SIZE_LIMIT)
+                        documents[documents.length] = fileDialog.files[i];
                 }
 
                 // Display all the documents to the user.

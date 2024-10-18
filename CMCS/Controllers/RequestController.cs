@@ -290,6 +290,7 @@ namespace CMCS.Controllers
                 // Re-instantiate a SqlDataReader? object.
                 reader = await CMCSDB.RunSQLResult(sql2);
 
+                sb.AppendLine();
                 sb.AppendLine("Pending Request(s):");
 
                 // Iterate while the SqlDataReader? object can read data.

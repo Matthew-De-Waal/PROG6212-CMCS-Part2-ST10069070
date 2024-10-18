@@ -80,25 +80,10 @@
                 </tr>
                 <tr>
                     <th>Status:</th>
-
-                    <!-- Check if the status is approved -->
-                    @if (status == "Approved")
-                    {
-                        <td><span style="background-color: silver; color: lawngreen; width: fit-content">@status</span></td>
-                    }
-                    else if(status == "Rejected")
-                    {
-                        <!-- Check if the status is Rejected -->
-                        <td><span style="background-color: silver; color: red; width: fit-content">@status</span></td>
-                    }
-                    else
-                    {
-                        <!-- Display the status to the user. -->
-                        <td>@status</td>
-                    }
+                    <td>@status</td>
                 </tr>
                 <tr>
-                    <th>Approved by:</th>
+                    <th>Approved/Rejected by:</th>
                     <td>@approvedBy</td>
                 </tr>
             </table>
