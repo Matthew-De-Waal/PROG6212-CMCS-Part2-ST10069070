@@ -44,23 +44,23 @@ namespace CMCS.Controllers
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
-        public IActionResult NewRequest()
+        public async Task<IActionResult> NewRequest()
         {
             // POST method
             if (this.Request.Method == "POST")
             {
                 if (this.Request.Headers["ActionName"] == "NewRequest")
-                    POST_NewRequest_New();
+                    await POST_NewRequest_New();
 
                 if (this.Request.Headers["ActionName"] == "EditRequest")
-                    POST_NewRequest_Edit();
+                    await POST_NewRequest_Edit();
             }
 
             // GET method
             if (this.Request.Method == "GET")
             {
                 if (this.Request.Query["ActionName"] == "EditRequest")
-                    return GET_NewRequest_Edit();
+                    return await GET_NewRequest_Edit();
             }
 
             return View();
@@ -81,47 +81,47 @@ namespace CMCS.Controllers
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
-        public IActionResult ManageRequests()
+        public async Task<IActionResult> ManageRequests()
         {
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // POST method
             if (this.Request.Method == "POST")
             {
                 if (this.Request.Headers["ActionName"] == "SetRequestIndex")
-                    ManageRequests_SetRequestIndex();
+                    await ManageRequests_SetRequestIndex();
 
                 if (this.Request.Headers["ActionName"] == "AcceptRequest")
-                    ManageRequests_AcceptRequest();
+                    await ManageRequests_AcceptRequest();
 
                 if (this.Request.Headers["ActionName"] == "RejectRequest")
-                    ManageRequests_RejectRequest();
+                    await ManageRequests_RejectRequest();
             }
 
             // GET method
             if (this.Request.Method == "GET")
             {
                 if (this.Request.Headers["ActionName"] == "GetRequestData")
-                    ManageRequests_GetRequestData();
+                    await ManageRequests_GetRequestData();
 
                 if (this.Request.Headers["ActionName"] == "GetDocumentContent")
-                    ManageRequests_GetDocumentContent();
+                    await ManageRequests_GetDocumentContent();
 
                 if (this.Request.Headers["ActionName"] == "GetDocumentContent2")
                     ManageRequests_GetDocumentContent2();
 
                 if (this.Request.Headers["ActionName"] == "GetRequestID")
-                    ManageRequests_GetRequestID();
+                    await ManageRequests_GetRequestID();
 
                 if(!this.Request.Headers.ContainsKey("ActionName"))
                 {
-                    return GET_ManageRequests();
+                    return await GET_ManageRequests();
                 }
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
 
             return View(new List<Request>());
         }
@@ -132,13 +132,13 @@ namespace CMCS.Controllers
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
-        public IActionResult CancelRequest()
+        public async Task<IActionResult> CancelRequest()
         {
             // POST method
             if (this.Request.Method == "POST")
             {
                 if (this.Request.Headers["ActionName"] == "CancelRequest")
-                    return POST_CancelRequest();
+                    return await POST_CancelRequest();
             }
 
             if (!CMCSMain.User.IsManager)
@@ -147,15 +147,15 @@ namespace CMCS.Controllers
                 string? requestID = this.Request.Query["RequestID"].ToString();
 
                 // Open the database connection.
-                CMCSDB.OpenConnection();
+                await CMCSDB.OpenConnection();
 
                 // Find the lecturer and get the id.
-                int lecturerID = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+                int lecturerID = await CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
 
                 // Select all the columns where the request id is provided.
                 string sql = $"SELECT * FROM Request WHERE RequestID = {requestID}";
                 // Execute the sql query and instantiate a SqlDataReader? object.
-                SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+                SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
                 if (reader != null)
                 {
@@ -169,18 +169,18 @@ namespace CMCS.Controllers
                         if (lecturerID == lecturerID2)
                         {
                             // Close the SqlDataReader? object.
-                            CMCSDB.CloseReader();
+                            await CMCSDB.CloseReader();
                             // Close the database connection.
-                            CMCSDB.CloseConnection();
+                            await CMCSDB.CloseConnection();
 
                             return View();
                         }
                     }
 
                     // Close the SqlDataReader? object.
-                    CMCSDB.CloseReader();
+                    await CMCSDB.CloseReader();
                     // Close the database connection.
-                    CMCSDB.CloseConnection();
+                    await CMCSDB.CloseConnection();
                 }
             }
 
@@ -197,17 +197,17 @@ namespace CMCS.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public void GetRequestStatus()
+        public async Task GetRequestStatus()
         {
             // Obtain the request id from the request query.
             string? requestId = this.Request.Query["RequestID"];
 
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             string sql = $"SELECT RequestStatus FROM Request WHERE RequestID = {requestId}";
             // Declare and instantiate a SqlDataReader? object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if (reader != null && reader.Read())
             {
@@ -225,9 +225,9 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace CMCS.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult ExportLog()
+        public async Task<IActionResult> ExportLog()
         {
             // Declare and instantiate a StringBuilder object.
             StringBuilder sb = new StringBuilder();
@@ -255,13 +255,13 @@ namespace CMCS.Controllers
             sb.AppendLine();
 
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Obtain the lecturer id.
-            int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+            int lecturerId = await CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
             string sql = $"SELECT * FROM Request r INNER JOIN RequestProcess p ON r.RequestID = p.RequestID WHERE LecturerID = {lecturerId}";
             // Declare and instantiate a SqlDataReader? object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if (reader != null)
             {
@@ -284,11 +284,11 @@ namespace CMCS.Controllers
                 }
 
                 // Close the SqlDataReader? object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 string sql2 = $"SELECT * FROM Request WHERE LecturerID = {lecturerId} AND RequestStatus = 'Pending'";
                 // Re-instantiate a SqlDataReader? object.
-                reader = CMCSDB.RunSQLResult(sql2);
+                reader = await CMCSDB.RunSQLResult(sql2);
 
                 sb.AppendLine("Pending Request(s):");
 
@@ -320,9 +320,9 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
 
             return View();
         }
@@ -330,10 +330,10 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the NewRequest method.
         /// </summary>
-        private void POST_NewRequest_New()
+        private async Task POST_NewRequest_New()
         {
             // Read the content from the request body, asynchronously.
-            var sRequestData = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
+            var sRequestData = await new StreamReader(this.Request.Body).ReadToEndAsync();
             // Parse the string content into a dynamic object, using JsonConvert.
             dynamic? requestData = JsonConvert.DeserializeObject(sRequestData);
 
@@ -346,14 +346,14 @@ namespace CMCS.Controllers
             dynamic? documents = requestData?.Documents;
 
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Get the lecturerId from an IdentityNumber.
-            int lecturerId = CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
+            int lecturerId = await CMCSDB.FindLecturer(CMCSMain.User.IdentityNumber);
 
             string sql2 = $"INSERT INTO Request(LecturerID, RequestFor, HoursWorked, HourlyRate, Description, RequestStatus, DateSubmitted) OUTPUT INSERTED.RequestID VALUES ('{lecturerId}', '{requestFor}', {hoursWorked}, {hourlyRate}, '{description}', 'Pending', '{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}')";
             // Run the sql query and obtain the output.
-            int requestID = (int)CMCSDB.RunSQLResultScalar(sql2);
+            int? requestID = (int?)await CMCSDB.RunSQLResultScalar(sql2);
 
             // Iterate through the 'documents' collection.
             for (int i = 0; i < documents?.Count; i++)
@@ -364,15 +364,15 @@ namespace CMCS.Controllers
 
                 string sql1 = $"INSERT INTO Document(Name, Type, Size, Section, UserID, Content) OUTPUT INSERTED.DocumentID VALUES ('{documents?[i].Name}', '{documentType}', {documents?[i].Size}, 'REQUEST', '{CMCSMain.User.IdentityNumber}', '{documents?[i].Content}')";
                 // Run the sql query and obtain the output.
-                int documentID = (int)CMCSDB.RunSQLResultScalar(sql1);
+                int documentID = (int)await CMCSDB.RunSQLResultScalar(sql1);
 
                 string sql3 = $"INSERT INTO RequestDocument(RequestID, DocumentID) VALUES ({requestID}, {documentID})";
                 // Run the sql query and do not return an output value.
-                CMCSDB.RunSQLNoResult(sql3);
+                await CMCSDB.RunSQLNoResult(sql3);
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
 
             // The request succeeded.
             this.Response.StatusCode = 1;
@@ -382,17 +382,17 @@ namespace CMCS.Controllers
         /// This method is part of the CancelRequest method.
         /// </summary>
         /// <returns></returns>
-        private IActionResult POST_CancelRequest()
+        private async Task<IActionResult> POST_CancelRequest()
         {
             // Obtain the request id from the request header collection.
             string? requestId = this.Request.Headers["RequestID"].ToString();
 
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             string sql4 = $"SELECT * FROM RequestDocument WHERE RequestID = {requestId}";
             // Create a SqlDataReader? object from a sql query.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql4);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql4);
 
             if (reader != null)
             {
@@ -407,13 +407,13 @@ namespace CMCS.Controllers
                 }
 
                 // Close the SqlDataReader?.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 // Iterate through the collection.
                 foreach (int documentId in documentList)
                 {
                     string sql5 = $"DELETE FROM Document WHERE DocumentID = {documentId}";
-                    CMCSDB.RunSQLNoResult(sql5);
+                    await CMCSDB.RunSQLNoResult(sql5);
                 }
 
                 // Delete all the data from the Request, RequestDocument and RequestProcess tables.
@@ -422,9 +422,9 @@ namespace CMCS.Controllers
                 string sql3 = $"DELETE FROM RequestProcess WHERE RequestID = {requestId}";
 
                 // Run the sql queries.
-                CMCSDB.RunSQLNoResult(sql1);
-                CMCSDB.RunSQLNoResult(sql2);
-                CMCSDB.RunSQLNoResult(sql3);
+                await CMCSDB.RunSQLNoResult(sql1);
+                await CMCSDB.RunSQLNoResult(sql2);
+                await CMCSDB.RunSQLNoResult(sql3);
                 // The request succeeded.
                 this.Response.StatusCode = 1;
             }
@@ -434,7 +434,7 @@ namespace CMCS.Controllers
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
 
             return View();
         }
@@ -442,13 +442,13 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the NewRequest method.
         /// </summary>
-        private void POST_NewRequest_Edit()
+        private async Task POST_NewRequest_Edit()
         {
             // Obtain the request id from the request query.
             string? sRequestID = this.Request.Headers["RequestID"];
 
             // Read the data from the request body, asynchronously.
-            var sRequestData = new StreamReader(this.Request.Body).ReadToEndAsync().Result;
+            var sRequestData = await new StreamReader(this.Request.Body).ReadToEndAsync();
             // Convert the string to a dynamic object using JsonConvert.
             dynamic? requestData = JsonConvert.DeserializeObject(sRequestData);
 
@@ -462,10 +462,10 @@ namespace CMCS.Controllers
             dynamic? deletedDocuments = requestData?.DeletedDocuments;
 
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             string sql2 = $"UPDATE Request SET RequestFor = '{requestFor}', HoursWorked = {hoursWorked}, HourlyRate = {hourlyRate}, Description = '{description}' WHERE RequestID = {sRequestID}";
-            CMCSDB.RunSQLNoResult(sql2);
+            await CMCSDB.RunSQLNoResult(sql2);
 
             // Iterate through the collection.
             for (int i = 0; i < documents?.Count; i++)
@@ -474,10 +474,10 @@ namespace CMCS.Controllers
                 string documentType = CMCSMain.GetDocumentType(documentName);
 
                 string sql1 = $"INSERT INTO Document(Name, Type, Size, Section, UserID, Content) OUTPUT INSERTED.DocumentID VALUES ('{documents?[i].Name}', '{documentType}', {documents?[i].Size}, 'REQUEST', '{CMCSMain.User.IdentityNumber}', '{documents?[i].Content}')";
-                int documentID = (int)CMCSDB.RunSQLResultScalar(sql1);
+                int documentID = (int)await CMCSDB.RunSQLResultScalar(sql1);
 
                 string sql3 = $"INSERT INTO RequestDocument(RequestID, DocumentID) VALUES ({sRequestID}, {documentID})";
-                CMCSDB.RunSQLNoResult(sql3);
+                await CMCSDB.RunSQLNoResult(sql3);
             }
 
             // Check if the variable 'deletedDocuments' does not equal 'DELETE_ALL'.
@@ -489,10 +489,10 @@ namespace CMCS.Controllers
                     int documentId = Convert.ToInt32(deletedDocuments[i]);
 
                     string sql1 = $"DELETE FROM RequestDocument WHERE DocumentID = {documentId}";
-                    CMCSDB.RunSQLNoResult(sql1);
+                    await CMCSDB.RunSQLNoResult(sql1);
 
                     string sql3 = $"DELETE FROM Document WHERE DocumentID = {documentId}";
-                    CMCSDB.RunSQLNoResult(sql3);
+                    await CMCSDB.RunSQLNoResult(sql3);
                 }
 
                 // The request succeeded.
@@ -502,8 +502,8 @@ namespace CMCS.Controllers
             {
                 // Variable declarations.
                 string sql = $"SELECT * FROM RequestDocument WHERE RequestID = {sRequestID}";
-                int row_count = CMCSDB.CountRows(sql);
-                var reader = CMCSDB.RunSQLResult(sql);
+                int row_count = await CMCSDB.CountRows(sql);
+                var reader = await CMCSDB.RunSQLResult(sql);
 
                 int[] documentIDList = new int[row_count];
 
@@ -518,17 +518,17 @@ namespace CMCS.Controllers
                 }
 
                 // Close the SqlDataReader? object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 // Iterate through the collection.
                 for (int i = 0; i < documentIDList.Length; i++)
                 {
                     string sql3 = $"DELETE FROM Document WHERE DocumentID = {documentIDList[i]}";
-                    CMCSDB.RunSQLNoResult(sql3);
+                    await CMCSDB.RunSQLNoResult(sql3);
                 }
 
                 string sql4 = $"DELETE FROM RequestDocument WHERE RequestID = {sRequestID}";
-                CMCSDB.RunSQLNoResult(sql4);
+                await CMCSDB.RunSQLNoResult(sql4);
 
                 if(reader != null)
                 {
@@ -542,24 +542,24 @@ namespace CMCS.Controllers
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         /// <summary>
         /// This method is part of the NewRequest method.
         /// </summary>
         /// <returns></returns>
-        private IActionResult GET_NewRequest_Edit()
+        private async Task<IActionResult> GET_NewRequest_Edit()
         {
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Get the request id from the request query.
             string? sRequestID = this.Request.Query["RequestID"];
 
             string sql4 = $"SELECT * FROM Request WHERE RequestID = {sRequestID}";
             // Declare and instantiate a SqlDataReader? object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql4);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql4);
             reader.Read();
 
             string? sRequestFor = reader["RequestFor"].ToString();
@@ -568,11 +568,11 @@ namespace CMCS.Controllers
             string? sDescription = reader["Description"].ToString();
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
             string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {sRequestID}";
-            int row_count = CMCSDB.CountRows(sql);
-            reader = CMCSDB.RunSQLResult(sql);
+            int row_count = await CMCSDB.CountRows(sql);
+            reader = await CMCSDB.RunSQLResult(sql);
 
             // Declare and instantiate a List<CMCSDocument> object.
             List<Document> documents = new List<Document>();
@@ -597,9 +597,9 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
 
             var view = View(documents);
             view.ViewData["RequestID"] = sRequestID;
@@ -614,12 +614,12 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_SetRequestIndex()
+        private async Task ManageRequests_SetRequestIndex()
         {
             // Set the selected request index.
             CMCSMain.SelectedRequestIndex = Convert.ToInt32(this.Request.Headers["RowSelected"]);
 
-            var reader = CMCSDB.RunSQLResult($"SELECT * FROM Request");
+            var reader = await CMCSDB.RunSQLResult($"SELECT * FROM Request");
 
             if (reader != null)
             {
@@ -640,17 +640,17 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
         }
 
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_GetRequestID()
+        private async Task ManageRequests_GetRequestID()
         {
             // Obtain the request index from the request header 'RequestIndex'.
             int requestIndex = Convert.ToInt32(this.Request.Headers["RequestIndex"]);
-            var reader = CMCSDB.RunSQLResult("SELECT * FROM Request");
+            var reader = await CMCSDB.RunSQLResult("SELECT * FROM Request");
 
             if (reader != null)
             {
@@ -673,23 +673,23 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
         }
 
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_AcceptRequest()
+        private async Task ManageRequests_AcceptRequest()
         {
             // Get the request id from the request header 'RequestID'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"].ToString());
 
             string sql = $"UPDATE Request SET RequestStatus = 'Approved' WHERE RequestID = {requestID}";
-            CMCSDB.RunSQLNoResult(sql);
+            await CMCSDB.RunSQLNoResult(sql);
 
-            int managerID = CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
+            int managerID = (await CMCSDB.FindManager(CMCSMain.User.IdentityNumber));
             string sql2 = $"INSERT INTO RequestProcess(RequestID, ManagerID, Date, Status) VALUES ({requestID}, {managerID}, '{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}', 'Approved')";
-            CMCSDB.RunSQLNoResult(sql2);
+            await CMCSDB.RunSQLNoResult(sql2);
 
             // The request succeeded.
             this.Response.StatusCode = 1;
@@ -698,17 +698,17 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_RejectRequest()
+        private async Task ManageRequests_RejectRequest()
         {
             // Get the request id from the request header 'RequestID'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"].ToString());
 
             string sql = $"UPDATE Request SET RequestStatus = 'Rejected' WHERE RequestID = {requestID}";
-            CMCSDB.RunSQLNoResult(sql);
+            await CMCSDB.RunSQLNoResult(sql);
 
-            int managerID = CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
+            int managerID = await CMCSDB.FindManager(CMCSMain.User.IdentityNumber);
             string sql2 = $"INSERT INTO RequestProcess(RequestID, ManagerID, Date, Status) VALUES ({requestID}, {managerID}, '{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}', 'Rejected')";
-            CMCSDB.RunSQLNoResult(sql2);
+            await CMCSDB.RunSQLNoResult(sql2);
 
             // The request succeeded.
             this.Response.StatusCode = 1;
@@ -717,12 +717,12 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_GetRequestData()
+        private async Task ManageRequests_GetRequestData()
         {
             // Get the request id from the request header 'RequestID'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
             string sql2 = $"SELECT * FROM Request r INNER JOIN Lecturer l ON r.LecturerID = l.LecturerID WHERE RequestID = {requestID}";
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql2);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql2);
 
             if (reader != null)
             {
@@ -745,11 +745,11 @@ namespace CMCS.Controllers
                 }
 
                 // Close the SqlDataReader? object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
-                int row_count = CMCSDB.CountRows(sql);
-                reader = CMCSDB.RunSQLResult(sql);
+                int row_count = await CMCSDB.CountRows(sql);
+                reader = await CMCSDB.RunSQLResult(sql);
 
                 // Declare and instantiate a List<CMCSDocument> object.
                 List<Document> documentList = new List<Document>();
@@ -775,7 +775,7 @@ namespace CMCS.Controllers
                 }
 
                 // Close the SqlDataReader? object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 // The request succeeded.
                 this.Response.StatusCode = 1;
@@ -791,7 +791,7 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private void ManageRequests_GetDocumentContent()
+        private async Task ManageRequests_GetDocumentContent()
         {
             // Obtain the data from the request headers 'RequestID' and 'FileIndex'.
             int requestID = Convert.ToInt32(this.Request.Headers["RequestID"]);
@@ -799,7 +799,7 @@ namespace CMCS.Controllers
 
             string sql = $"SELECT * FROM RequestDocument r INNER JOIN Document d ON r.DocumentID = d.DocumentID WHERE r.RequestID = {requestID}";
             // Declare and instantiate a SqlDataReader? object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if (reader != null)
             {
@@ -823,7 +823,7 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
         }
 
         private void ManageRequests_GetDocumentContent2()
@@ -842,11 +842,11 @@ namespace CMCS.Controllers
         /// <summary>
         /// This method is part of the ManageRequests method.
         /// </summary>
-        private IActionResult GET_ManageRequests()
+        private async Task<IActionResult> GET_ManageRequests()
         {
             string sql1 = $"SELECT * FROM Request";
-            int row_count = CMCSDB.CountRows(sql1);
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql1);
+            int row_count = await CMCSDB.CountRows(sql1);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql1);
 
             // Declare and instantiate a List<CMCDRequest> object.
             List<Request> requestList = new List<Request>();
@@ -876,11 +876,11 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
             string sql2 = $"SELECT * FROM Request r INNER JOIN RequestProcess p ON r.RequestID = p.RequestID";
-            int row_count2 = CMCSDB.CountRows(sql2);
-            reader = CMCSDB.RunSQLResult(sql2);
+            int row_count2 = await CMCSDB.CountRows(sql2);
+            reader = await CMCSDB.RunSQLResult(sql2);
 
             if (reader != null)
             {
@@ -907,7 +907,7 @@ namespace CMCS.Controllers
             }
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
             // Declare and instantiate a generic collection.
             List<string> lecturerNames = new List<string>();
@@ -916,7 +916,7 @@ namespace CMCS.Controllers
             for (int i = 0; i < requestList.Count; i++)
             {
                 string sql3 = $"SELECT * FROM Lecturer WHERE LecturerID = {requestList[i].LecturerID}";
-                reader = CMCSDB.RunSQLResult(sql3);
+                reader = await CMCSDB.RunSQLResult(sql3);
 
                 if (reader != null && reader.Read())
                 {
@@ -927,7 +927,7 @@ namespace CMCS.Controllers
                 }
 
                 // Close the reader.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
             }
 
             var view = View(requestList);

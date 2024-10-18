@@ -41,17 +41,17 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public static bool UserExists(string userId)
+        public static async Task<bool> UserExists(string userId)
         {
             bool result = false;
 
-            var reader1 = CMCSDB.RunSQLResult($"SELECT * FROM Lecturer WHERE IdentityNumber = '{userId}'");
+            var reader1 = await CMCSDB.RunSQLResult($"SELECT * FROM Lecturer WHERE IdentityNumber = '{userId}'");
             bool reader1Result = reader1 != null ? reader1.HasRows : false;
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
-            var reader2 = CMCSDB.RunSQLResult($"SELECT * FROM Manager WHERE IdentityNumber = '{userId}'");
+            var reader2 = await CMCSDB.RunSQLResult($"SELECT * FROM Manager WHERE IdentityNumber = '{userId}'");
             bool reader2Result = reader2 != null ? reader2.HasRows : false;
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
             result = reader1Result || reader2Result;
 

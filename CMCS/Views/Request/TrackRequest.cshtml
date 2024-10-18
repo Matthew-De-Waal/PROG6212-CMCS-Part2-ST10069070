@@ -13,9 +13,9 @@
         string sql = $"SELECT * FROM Request WHERE RequestID = {requestID}";
 
         // Open the database connection.
-        CMCSDB.OpenConnection();
+        await CMCSDB.OpenConnection();
         // Declare and instantiate a SqlDataReader? object.
-        var reader = CMCSDB.RunSQLResult(sql);
+        var reader = await CMCSDB.RunSQLResult(sql);
         // Read data
         if (reader != null && reader.Read())
         {
@@ -23,20 +23,20 @@
             status = reader["RequestStatus"].ToString();
 
             // Close the SqlDataReader? object.
-            CMCSDB.CloseReader();
+            await CMCSDB.CloseReader();
 
             string sql3 = $"SELECT * FROM RequestProcess WHERE RequestID = {requestID}";
-            reader = CMCSDB.RunSQLResult(sql3);
+            reader = await CMCSDB.RunSQLResult(sql3);
 
             // Check if the reader has rows.
             if (reader != null && reader.Read())
             {
                 int managerID = Convert.ToInt32(reader["ManagerID"].ToString());
                 // Close the SqlDataReader? object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
 
                 string sql2 = $"SELECT FirstName, LastName FROM Manager WHERE ManagerID = {managerID}";
-                reader = CMCSDB.RunSQLResult(sql2);
+                reader = await CMCSDB.RunSQLResult(sql2);
                 // Read data
                 if (reader != null && reader.Read())
                 {
@@ -46,9 +46,9 @@
         }
 
         // Close the SqlDataReader? object.
-        CMCSDB.CloseReader();
+        await CMCSDB.CloseReader();
         // Close the database connection.
-        CMCSDB.CloseConnection();
+        await CMCSDB.CloseConnection();
     }
 }
 

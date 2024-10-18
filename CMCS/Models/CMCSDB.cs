@@ -7,7 +7,7 @@ namespace CMCS.Models
     public static class CMCSDB
     {
         // Data fields
-        private static SqlConnection? sqlConnection;
+        public static SqlConnection? sqlConnection;
         private static bool readerOpened = false;
         private static SqlDataReader? sqlDataReader = null;
 
@@ -23,22 +23,22 @@ namespace CMCS.Models
         /// <summary>
         /// Opens the CMCS database connection.
         /// </summary>
-        public static void OpenConnection()
+        public static async Task OpenConnection()
         {
             if(sqlConnection != null && sqlConnection.State == ConnectionState.Closed)
             {
-                sqlConnection.Open();
+                 await sqlConnection.OpenAsync();
             }
         }
 
         /// <summary>
         /// Closes the CMCS database connection.
         /// </summary>
-        public static void CloseConnection()
+        public static async Task CloseConnection()
         {
             if(sqlConnection != null && sqlConnection.State == ConnectionState.Open)
             {
-                sqlConnection.Close();
+                await sqlConnection.CloseAsync();
             }
         }
 
@@ -46,13 +46,12 @@ namespace CMCS.Models
         /// Runs a SQL query that does not return a SqlDataReader? object.
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
-        public static void RunSQLNoResult(string sql)
+        public static async Task RunSQLNoResult(string sql)
         {
             if (!readerOpened)
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-                sqlCmd.ExecuteNonQueryAsync();
-                Thread.Sleep(500);
+                await sqlCmd.ExecuteNonQueryAsync();
             }
         }
 
@@ -61,23 +60,13 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns></returns>
-        public static SqlDataReader? RunSQLResult(string sql)
+        public static async Task<SqlDataReader?> RunSQLResult(string sql)
         {
             if (!readerOpened)
             {
                 readerOpened = true;
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-
-                try
-                {
-                    sqlDataReader = sqlCmd.ExecuteReaderAsync().Result;
-                }
-                catch
-                {
-                    readerOpened = false;
-
-                    return null;
-                }
+                sqlDataReader = await sqlCmd.ExecuteReaderAsync();
 
                 return sqlDataReader;
             }
@@ -92,13 +81,12 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns>The output from the SQL query.</returns>
-        public static object? RunSQLResultScalar(string sql)
+        public static async Task<object?> RunSQLResultScalar(string sql)
         {
             if (!readerOpened)
             {
                 SqlCommand sqlCmd = new SqlCommand(sql, sqlConnection);
-                object? result = sqlCmd.ExecuteScalarAsync().Result;
-                Thread.Sleep(500);
+                object? result = await sqlCmd.ExecuteScalarAsync();
 
                 return result;
             }
@@ -108,11 +96,11 @@ namespace CMCS.Models
             }
         }
 
-        public static void CloseReader()
+        public static async Task CloseReader()
         {
             if(sqlDataReader != null && readerOpened)
             {
-                sqlDataReader?.CloseAsync();
+                await sqlDataReader.CloseAsync();
                 sqlDataReader = null;
             }
 
@@ -124,9 +112,9 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="sql">The SQL query to be executed.</param>
         /// <returns>The number of rows counted.</returns>
-        public static int CountRows(string sql)
+        public static async Task<int> CountRows(string sql)
         {
-            SqlDataReader? reader = RunSQLResult(sql);
+            SqlDataReader? reader = await RunSQLResult(sql);
             int rowCount = 0;
 
             while(reader != null && reader.Read())
@@ -134,7 +122,7 @@ namespace CMCS.Models
                 rowCount++;
             }
 
-            CloseReader();
+            await CloseReader();
 
             return rowCount;
         }
@@ -144,10 +132,10 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="identityNumber"></param>
         /// <returns></returns>
-        public static int FindLecturer(string? identityNumber)
+        public static async Task<int> FindLecturer(string? identityNumber)
         {
             string sql = $"SELECT LecturerID FROM Lecturer WHERE IdentityNumber = '{identityNumber}'";
-            SqlDataReader? reader = RunSQLResult(sql);
+            SqlDataReader? reader = await RunSQLResult(sql);
             int lecturerId = 0;
 
             if (reader != null && reader.Read())
@@ -155,7 +143,7 @@ namespace CMCS.Models
                 lecturerId = Convert.ToInt32(reader["LecturerID"]);
             }
 
-            CloseReader();
+            await CloseReader();
 
             return lecturerId;
         }
@@ -165,10 +153,10 @@ namespace CMCS.Models
         /// </summary>
         /// <param name="identityNumber"></param>
         /// <returns></returns>
-        public static int FindManager(string identityNumber)
+        public static async Task<int> FindManager(string? identityNumber)
         {
             string sql = $"SELECT ManagerID FROM Manager WHERE IdentityNumber = '{identityNumber}'";
-            SqlDataReader? reader = RunSQLResult(sql);
+            SqlDataReader? reader = await RunSQLResult(sql);
             int managerId = 0;
 
             if (reader != null && reader.Read())
@@ -176,7 +164,7 @@ namespace CMCS.Models
                 managerId = Convert.ToInt32(reader["ManagerID"]);
             }
             
-            CloseReader();
+            await CloseReader();
 
             return managerId;
         }

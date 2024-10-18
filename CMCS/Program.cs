@@ -10,7 +10,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(buil
 
 var app = builder.Build();
 
-// Initialize CMCSDB.
+// Initialize await CMCSDB.
 CMCSDB.Initialize(app.Configuration.GetConnectionString("DefaultConnection"));
 
 // Configure the HTTP request pipeline.

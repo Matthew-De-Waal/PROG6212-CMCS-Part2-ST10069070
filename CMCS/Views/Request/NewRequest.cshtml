@@ -173,6 +173,12 @@
 
             // Check if the validation process succeeded.
             if (validation) {
+                // Show the loading screen if the webpage is taking long to respond.
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 let SupportingDocuments = [];
                 let documentsRead = 0;
 
@@ -197,13 +203,7 @@
                 // Start a new interval that will check if the number of documents
                 // read matches with the total number of documents.
                 let interval = setInterval(function () {
-                    if (documentsRead == documents.length) {
-                        // Show the loading screen if the webpage is taking long to respond.
-                        document.getElementById("main-screen").style.position = "absolute";
-                        document.getElementById("main-footer").style.position = "fixed";
-                        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
-                        document.getElementById("loading-screen").hidden = false;
-                        
+                    if (documentsRead == documents.length) {     
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments };
                         // Post data
                         POST_DATA2("/Request/NewRequest", JSON.stringify(requestData), [["ActionName", "NewRequest"]], RequestSubmitted);
@@ -250,6 +250,12 @@
 
             // Check if the validation process succeeded.
             if (validation) {
+                // Show the loading screen if the webpage is taking long to respond.
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 let SupportingDocuments = [];
                 let documentsRead = 0;
 
@@ -274,12 +280,6 @@
                 // read matches with the total number of documents.
                 let interval = setInterval(function () {
                     if (documentsRead == documents.length) {
-                        // Show the loading screen if the webpage is taking long to respond.
-                        document.getElementById("main-screen").style.position = "absolute";
-                        document.getElementById("main-footer").style.position = "fixed";
-                        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
-                        document.getElementById("loading-screen").hidden = false;
-                        
                         let requestData = { "RequestFor": requestFor, "HoursWorked": hoursWorked, "HourlyRate": hourlyRate, "Description": description, "Documents": SupportingDocuments, "DeletedDocuments": deletedDocuments };
                         let requestID = document.getElementById("RequestID").value;
 

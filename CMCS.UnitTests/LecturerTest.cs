@@ -14,9 +14,9 @@ namespace CMCS.UnitTests
         public void Test_RegisterUser()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Variable Declarations
             string firstName = "John";
@@ -26,12 +26,12 @@ namespace CMCS.UnitTests
             string password = "abcd12!@";
 
             // Obtain the lecturer id.
-            int lecturerId = CMCSDB.FindLecturer(identityNumber);
+            int lecturerId = await CMCSDB.FindLecturer(identityNumber);
 
             if(lecturerId == 0)
             {
                 string sql = $"INSERT INTO Lecturer(FirstName, LastName, EmailAddress, IdentityNumber, Password) VALUES ('{firstName}', '{lastName}', '{emailAddress}', '{identityNumber}', '{password}')";
-                CMCSDB.RunSQLNoResult(sql);
+                await CMCSDB.RunSQLNoResult(sql);
 
                 // The test succeeded.
                 Assert.IsTrue(true);
@@ -43,29 +43,29 @@ namespace CMCS.UnitTests
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_UserLogin()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Variable Declarations
             string userId = "11102";
             string password = "abcd12!@";
 
             // Obtain the lecturer id.
-            int lecturerId = CMCSDB.FindLecturer(userId);
+            int lecturerId = await CMCSDB.FindLecturer(userId);
 
             // Check if the lecturer id is not zero.
             if (lecturerId != 0)
             {
                 string sql = $"SELECT Password FROM Lecturer WHERE LecturerID = {lecturerId}";
-                SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+                SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
                 string? userPassword = string.Empty;
 
@@ -75,7 +75,7 @@ namespace CMCS.UnitTests
                 }
 
                 // Close the SqlDataReader object.
-                CMCSDB.CloseReader();
+                await CMCSDB.CloseReader();
                 // The test succeeded.
                 Assert.IsTrue(password == userPassword);
             }
@@ -86,16 +86,16 @@ namespace CMCS.UnitTests
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_SubmitClaim()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Variable Declarations
             string requestFor = "Bonus";
@@ -103,77 +103,77 @@ namespace CMCS.UnitTests
             string hourlyRate = "12";
             string description = "Bonus1234";
             string dateSubmitted = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-            int lecturerId = CMCSDB.FindLecturer("11102");
+            int lecturerId = await CMCSDB.FindLecturer("11102");
 
             string sql = $"INSERT INTO Request(RequestFor, HoursWorked, HourlyRate, Description, DateSubmitted, RequestStatus, LecturerID) VALUES ('{requestFor}', '{hoursWorked}', '{hourlyRate}', '{description}', '{dateSubmitted}', 'Pending', {lecturerId})";
             // Run the SQL query.
-            CMCSDB.RunSQLNoResult(sql);
+            await CMCSDB.RunSQLNoResult(sql);
 
             // The test succeeded.
             Assert.IsTrue(true);
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_EditClaim()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Obtain the lecturer id.
-            int lecturerId = CMCSDB.FindLecturer("11102");
+            int lecturerId = await CMCSDB.FindLecturer("11102");
 
             string sql = $"UPDATE Request SET RequestFor = 'Bonus1234' WHERE LecturerID = {lecturerId}";
             // Run the SQL query.
-            CMCSDB.RunSQLNoResult(sql);
+            await CMCSDB.RunSQLNoResult(sql);
 
             // The test succeeded.
             Assert.IsTrue(true);
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_CancelClaim()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Provide a valid request id here.
             int requestId = 58;
 
             string sql = $"DELETE FROM Request WHERE RequestID = {requestId}";
             // Run the SQL query.
-            CMCSDB.RunSQLNoResult(sql);
+            await CMCSDB.RunSQLNoResult(sql);
 
             // The test succeeded.
             Assert.IsTrue(true);
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_TrackClaim_IsPending()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Provide a valid request id here.
             int requestId = 0;
 
             string sql = $"SELECT RequestStatus FROM Request WHERE RequestID = {requestId}";
             // Declare and instantiate a SqlDataReader object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if(reader != null && reader.Read())
             {
@@ -189,23 +189,23 @@ namespace CMCS.UnitTests
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_TrackClaim_IsApproved()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Provide a valid request id here.
             int requestId = 0;
 
             string sql = $"SELECT RequestStatus FROM Request WHERE RequestID = {requestId}";
             // Declare and instantiate a SqlDataReader object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if (reader != null && reader.Read())
             {
@@ -221,23 +221,23 @@ namespace CMCS.UnitTests
             }
 
             // Close the database connection
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
 
         [TestMethod]
         public void Test_TrackClaim_IsRejected()
         {
             // Database initialization
-            CMCSDB.Initialize(CONNECTION_STRING);
+            await CMCSDB.Initialize(CONNECTION_STRING);
             // Open the database connection.
-            CMCSDB.OpenConnection();
+            await CMCSDB.OpenConnection();
 
             // Provide a valid request id here.
             int requestId = 0;
 
             string sql = $"SELECT RequestStatus FROM Request WHERE RequestID = {requestId}";
             // Declare and instantiate a SqlDataReader object.
-            SqlDataReader? reader = CMCSDB.RunSQLResult(sql);
+            SqlDataReader? reader = await CMCSDB.RunSQLResult(sql);
 
             if (reader != null && reader.Read())
             {
@@ -253,7 +253,7 @@ namespace CMCS.UnitTests
             }
 
             // Close the database connection.
-            CMCSDB.CloseConnection();
+            await CMCSDB.CloseConnection();
         }
     }
 }

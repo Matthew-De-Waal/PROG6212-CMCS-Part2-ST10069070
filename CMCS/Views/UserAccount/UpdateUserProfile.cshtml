@@ -282,6 +282,11 @@
 
             // Check if the validation process succeeded.
             if (validation) {
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 // Create a new object.
                 let userData = new Object();
 
@@ -350,6 +355,10 @@
                     if (documentsRead == (uploadedQualificationDocuments.length + uploadedIdentityDocuments.length)) {
                         // Post data
                         POST_DATA2("/UserAccount/UpdateUserProfile", JSON.stringify(userData), [["ActionName", "UpdateAccount"]], function (status) {
+                            document.getElementById("main-screen").style.position = "relative";
+                            document.getElementById("main-footer").style.position = EMPTY_STRING;
+                            document.getElementById("loading-screen").hidden = true;
+                            
                             // Check if the status is OK and the role is 'Lecturer'.
                             if (status == 1 && role == "Lecturer") {
                                 // Redirect the user to the UserAccount page.

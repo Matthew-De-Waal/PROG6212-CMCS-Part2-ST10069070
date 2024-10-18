@@ -108,6 +108,12 @@
                 identityDocuments.length > 0;
 
             if (validation) {
+                // Show the loading screen if the webpage is taking long to respond.
+                document.getElementById("main-screen").style.position = "absolute";
+                document.getElementById("main-footer").style.position = "fixed";
+                document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
+                document.getElementById("loading-screen").hidden = false;
+
                 // Declare and instantiate an anonymous object.
                 let userData = new Object();
 
@@ -156,12 +162,6 @@
                 // Start a new interval.
                 let interval = setInterval(function () {
                     if (count == (qualificationDocuments.length + identityDocuments.length)) {
-                        // Show the loading screen if the webpage is taking long to respond.
-                        document.getElementById("main-screen").style.position = "absolute";
-                        document.getElementById("main-footer").style.position = "fixed";
-                        document.getElementById("loading-screen").style.top = ((window.innerHeight / 2) - (window.innerHeight / 4)) + window.scrollY + "px";
-                        document.getElementById("loading-screen").hidden = false;
-
                         // Post data
                         POST_DATA("/UserAccount/UserRegistration", JSON.stringify(userData), RegistrationSubmitted);
                         // Stop the interval.
