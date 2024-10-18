@@ -4,7 +4,7 @@
 // Write your JavaScript code.
 
 const EMPTY_STRING = "";
-const MAX_FILE_SIZE_LIMIT = 10000000;
+const MAX_FILE_SIZE_LIMIT = 2000000;
 
 // This method checks if the given password is strong enough.
 function IsStrongPassword(password) {
